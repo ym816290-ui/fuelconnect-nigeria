@@ -1,0 +1,104 @@
+
+:root {
+  --green: #087443;
+  --dark-green: #075c36;
+  --light-green: #e5f3e9;
+  --white: #ffffff;
+  --text: #18352b;
+}
+
+body {
+  background: #f5f8f6;
+  color: var(--text);
+}
+
+header {
+  background: var(--green);
+  color: var(--white);
+  padding: 24px 16px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+nav {
+  background: var(--dark-green);
+  padding: 16px;
+  text-align: center;
+}
+
+nav a {
+  color: var(--white);
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.hero {
+  background: var(--light-green);
+  padding: 70px 20px;
+  text-align: center;
+}
+
+.hero h2 {
+  font-size: 34px;
+  margin-bottom: 16px;
+}
+
+.hero p {
+  max-width: 650px;
+  margin: auto;
+  line-height: 1.7;
+}
+
+.button {
+  display: inline-block;
+  background: var(--green);
+  color: var(--white);
+  padding: 14px 22px;
+  margin: 20px 6px 0;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.section {
+  padding: 45px 20px;
+  text-align: center;
+}
+
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 25px;
+}
+
+.product {
+  background: var(--white);
+  padding: 25px;
+  width: 145px;
+  border-radius: 9px;
+  box-shadow: 0 2px 10px #00000012;
+}
+
+footer {
+  background: var(--dark-green);
+  color: var(--white);
+  padding: 28px 16px;
+  text-align: center;
+  line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+  .hero h2 {
+    font-size: 26px;
+  }
+
+  nav a {
+    display: inline-block;
+    margin: 7px;
+  }
+}
