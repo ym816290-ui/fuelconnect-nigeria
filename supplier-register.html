@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supplier Registration | FuelConnect Nigeria</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f3f7f4;
+  color: #222;
+}
+.container {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0,0,0,.08);
+}
+h1 { color: #087b3e; text-align: center; }
+p { line-height: 1.6; text-align: center; }
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 7px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #087b3e;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+.notice {
+  margin-top: 18px;
+  padding: 12px;
+  background: #fff4e5;
+  border-left: 4px solid #ed8b20;
+  font-size: 14px;
+}
+a { color: #087b3e; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Supplier Registration</h1>
+<p>Register your business interest in connecting with petroleum buyers through FuelConnect Nigeria.</p>
+
+<form id="supplierForm">
+<label for="business">Business Name</label>
+<input id="business" type="text" required>
+
+<label for="fullname">Contact Person's Full Name</label>
+<input id="fullname" type="text" required>
+
+<label for="phone">Business Phone Number</label>
+<input id="phone" type="tel" required>
+
+<label for="email">Business Email Address</label>
+<input id="email" type="email" required>
+
+<label for="state">Business Location - State</label>
+<select id="state" required>
+<option value="">Select State</option>
+<option>Abia</option><option>Adamawa</option>
+<option>Akwa Ibom</option><option>Anambra</option>
+<option>Bauchi</option><option>Bayelsa</option>
+<option>Benue</option><option>Borno</option>
+<option>Cross River</option><option>Delta</option>
+<option>Ebonyi</option><option>Edo</option>
+<option>Ekiti</option><option>Enugu</option>
+<option>FCT Abuja</option><option>Gombe</option>
+<option>Imo</option><option>Jigawa</option>
+<option>Kaduna</option><option>Kano</option>
+<option>Katsina</option><option>Kebbi</option>
+<option>Kogi</option><option>Kwara</option>
+<option>Lagos</option><option>Nasarawa</option>
+<option>Niger</option><option>Ogun</option>
+<option>Ondo</option><option>Osun</option>
+<option>Oyo</option><option>Plateau</option>
+<option>Rivers</option><option>Sokoto</option>
+<option>Taraba</option><option>Yobe</option>
+<option>Zamfara</option>
+</select>
+
+<label for="products">Petroleum Products Supplied</label>
+<select id="products" required>
+<option value="">Select Product</option>
+<option>PMS - Petrol</option>
+<option>AGO - Diesel</option>
+<option>DPK - Kerosene</option>
+<option>ATK - Aviation Fuel</option>
+<option>LPG - Cooking Gas</option>
+<option>Multiple Products</option>
+</select>
+
+<label for="licence">Regulatory Licence Information</label>
+<input id="licence" type="text" placeholder="Licence type or reference (if applicable)">
+
+<label for="location">Business Address</label>
+<textarea id="location" rows="3" required></textarea>
+
+<button type="submit">Submit Supplier Registration</button>
+</form>
+
+<div class="notice">
+<strong>Important Notice:</strong> This is a demonstration form only. It does not send or store information. Supplier details and applicable regulatory licences must be verified before participation. Do not enter sensitive personal information.
+</div>
+
+<p><a href="index.html">Back to Home</a></p>
+</div>
+
+<script>
+document.getElementById("supplierForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+  alert("Thank you. This demonstration form is not connected to a registration system yet.");
+});
+</script>
+</body>
+  </html>
+  
