@@ -1,11 +1,12 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="style.css">
-  <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FuelConnect Nigeria</title>
+  <meta name="description" content="FuelConnect Nigeria connects buyers with independent petroleum suppliers across Nigeria.">
+  <title>FuelConnect Nigeria | Your Trusted Fuel Marketplace</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -14,97 +15,284 @@
       font-family: Arial, sans-serif;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      background: #f5f8f6;
+      background: #f7faf8;
       color: #18352b;
+      line-height: 1.6;
     }
 
     header {
-      background: #087443;
+      background: #075c36;
       color: white;
-      padding: 20px;
-      text-align: center;
+      padding: 18px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    header h1 {
-      font-size: 25px;
+    .logo {
+      font-size: 23px;
+      font-weight: bold;
+    }
+
+    .logo span {
+      color: #ff9d32;
+    }
+
+    header p {
+      font-size: 12px;
+      color: #e2f2e8;
     }
 
     nav {
-      background: #075c36;
-      padding: 14px;
+      background: #064a2d;
+      padding: 13px 8px;
       text-align: center;
     }
 
     nav a {
       color: white;
       text-decoration: none;
-      margin: 0 10px;
+      margin: 0 12px;
       font-size: 14px;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: #ffad4d;
     }
 
     .hero {
+      background: linear-gradient(135deg, #e4f4e9, #f8fbf8);
+      padding: 85px 20px;
       text-align: center;
-      padding: 65px 20px;
-      background: #e5f3e9;
     }
 
-    .hero h2 {
-      font-size: 32px;
-      margin-bottom: 15px;
+    .hero-label {
+      display: inline-block;
+      background: #d0ead8;
+      color: #075c36;
+      padding: 7px 15px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      color: #075c36;
+      font-size: 38px;
+      line-height: 1.2;
+      max-width: 750px;
+      margin: auto auto 18px;
     }
 
     .hero p {
-      max-width: 600px;
+      max-width: 650px;
       margin: auto;
-      line-height: 1.7;
+      color: #53665c;
+      font-size: 16px;
+    }
+
+    .buttons {
+      margin-top: 28px;
     }
 
     .button {
       display: inline-block;
-      margin: 22px 8px 0;
-      padding: 13px 22px;
+      padding: 13px 23px;
+      margin: 6px;
+      border-radius: 7px;
+      text-decoration: none;
+      font-weight: bold;
       background: #087443;
       color: white;
-      text-decoration: none;
-      border-radius: 6px;
+    }
+
+    .button.secondary {
+      background: #ff982e;
+      color: #18352b;
     }
 
     .section {
-      padding: 40px 20px;
+      padding: 65px 7%;
       text-align: center;
     }
 
+    .section h2 {
+      font-size: 29px;
+      color: #075c36;
+      margin-bottom: 12px;
+    }
+
+    .section-intro {
+      max-width: 650px;
+      margin: 0 auto 30px;
+      color: #617168;
+    }
+
     .products {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 25px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 18px;
+      max-width: 900px;
+      margin: 30px auto 0;
     }
 
     .product {
       background: white;
-      padding: 22px;
-      border-radius: 8px;
-      width: 150px;
-      box-shadow: 0 2px 8px #00000012;
+      padding: 25px 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px #0000000c;
+      border-bottom: 4px solid #ff982e;
+    }
+
+    .product h3 {
+      color: #087443;
+      font-size: 23px;
+      margin-bottom: 7px;
+    }
+
+    .product p {
+      color: #65736b;
+      font-size: 13px;
+    }
+
+    .how {
+      background: #eaf4ed;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 20px;
+      max-width: 950px;
+      margin: 30px auto 0;
+    }
+
+    .step {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    .step-number {
+      background: #087443;
+      color: white;
+      width: 42px;
+      height: 42px;
+      line-height: 42px;
+      border-radius: 50%;
+      margin: 0 auto 15px;
+      font-weight: bold;
+    }
+
+    .step h3 {
+      color: #075c36;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      color: #617168;
+      font-size: 14px;
+    }
+
+    .notice {
+      background: white;
+      border-left: 5px solid #ff982e;
+      max-width: 850px;
+      margin: 35px auto 0;
+      padding: 20px;
+      text-align: left;
+      border-radius: 7px;
+      color: #53665c;
+    }
+
+    .contact {
+      background: #075c36;
+      color: white;
+    }
+
+    .contact h2 {
+      color: white;
+    }
+
+    .contact p {
+      max-width: 650px;
+      margin: 12px auto;
+      color: #e4f2e9;
+    }
+
+    .contact .button {
+      background: #ff982e;
+      color: #18352b;
     }
 
     footer {
-      background: #075c36;
+      background: #043c25;
       color: white;
-      padding: 25px;
       text-align: center;
-      line-height: 1.8;
+      padding: 28px 15px;
+    }
+
+    footer p {
+      margin: 5px;
+      font-size: 14px;
+    }
+
+    footer .tagline {
+      color: #ffad4d;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        justify-content: center;
+        text-align: center;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 6px 8px;
+      }
+
+      .hero {
+        padding: 65px 18px;
+      }
+
+      .hero h1 {
+        font-size: 29px;
+      }
+
+      .section {
+        padding: 48px 18px;
+      }
+
+      .section h2 {
+        font-size: 25px;
+      }
+
+      .button {
+        display: block;
+        max-width: 260px;
+        margin: 10px auto;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <header>
-    <h1>FuelConnect Nigeria</h1>
-    <p>Your Trusted Fuel Marketplace</p>
+    <div>
+      <div class="logo">FuelConnect <span>Nigeria</span></div>
+      <p>Your Trusted Fuel Marketplace</p>
+    </div>
   </header>
 
   <nav>
@@ -115,48 +303,114 @@
   </nav>
 
   <section class="hero" id="home">
-    <h2>Connect With Trusted Fuel Suppliers</h2>
-    <p>
-      FuelConnect Nigeria is a digital marketplace
-      designed to connect buyers with verified and
-      licensed petroleum suppliers across Nigeria.
-    </p>
-    <a href="#products" class="button">Explore Products</a>
-    <a href="#contact" class="button">Get Started</a>
-  </section>
+    <div class="hero-label">A Digital Petroleum Marketplace</div>
 
-  <section class="section" id="products">
-    <h2>Petroleum Products</h2>
-    <div class="products">
-      <div class="product">PMS</div>
-      <div class="product">AGO</div>
-      <div class="product">DPK</div>
-      <div class="product">ATK</div>
-      <div class="product">LPG</div>
+    <h1>Connecting Nigeria to Trusted Fuel Suppliers</h1>
+
+    <p>
+      FuelConnect Nigeria is a digital marketplace designed
+      to connect buyers with independent petroleum suppliers
+      across Nigeria.
+    </p>
+
+    <div class="buttons">
+      <a href="#products" class="button">Explore Products</a>
+      <a href="#about" class="button secondary">How It Works</a>
     </div>
   </section>
 
-  <section class="section" id="about">
-    <h2>How It Works</h2>
-    <p>
-      Buyers discover suppliers and submit requests.
-      Suppliers register their businesses and respond
-      to requests. Supplier verification is required.
+  <section class="section" id="products">
+    <h2>Our Petroleum Products</h2>
+    <p class="section-intro">
+      Explore the petroleum product categories supported
+      by the FuelConnect Nigeria marketplace.
     </p>
+
+    <div class="products">
+      <div class="product">
+        <h3>PMS</h3>
+        <p>Premium Motor Spirit</p>
+      </div>
+
+      <div class="product">
+        <h3>AGO</h3>
+        <p>Automotive Gas Oil</p>
+      </div>
+
+      <div class="product">
+        <h3>DPK</h3>
+        <p>Dual Purpose Kerosene</p>
+      </div>
+
+      <div class="product">
+        <h3>ATK</h3>
+        <p>Aviation Turbine Kerosene</p>
+      </div>
+
+      <div class="product">
+        <h3>LPG</h3>
+        <p>Liquefied Petroleum Gas</p>
+      </div>
+    </div>
   </section>
 
-  <section class="section" id="contact">
-    <h2>Contact FuelConnect Nigeria</h2>
-    <p>Our digital marketplace is being developed.</p>
-    <p>Platform language: English</p>
+  <section class="section how" id="about">
+    <h2>How FuelConnect Works</h2>
+    <p class="section-intro">
+      Our goal is to make it easier for buyers and suppliers
+      to discover business opportunities.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Discover</h3>
+        <p>Buyers explore petroleum product categories and available suppliers.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Connect</h3>
+        <p>Buyers and suppliers can connect and discuss their business requirements.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Verify</h3>
+        <p>Suppliers must undergo appropriate licence and business verification before participating.</p>
+      </div>
+    </div>
+
+    <div class="notice">
+      <strong>Important Notice</strong>
+      <p>
+        FuelConnect Nigeria is a digital marketplace connecting
+        buyers with independent suppliers. It does not claim
+        to be a petroleum seller, distributor, or NNPC partner.
+        All suppliers are expected to meet applicable regulatory
+        requirements.
+      </p>
+    </div>
+  </section>
+
+  <section class="section contact" id="contact">
+    <h2>Connect With FuelConnect Nigeria</h2>
+    <p>
+      We are developing our digital marketplace to support
+      connections between petroleum buyers and suppliers
+      across Nigeria.
+    </p>
+    <a href="#home" class="button">Back to Home</a>
   </section>
 
   <footer>
-    <p>FuelConnect Nigeria</p>
-    <p>Your Trusted Fuel Marketplace</p>
+    <p><strong>FuelConnect Nigeria</strong></p>
+    <p class="tagline">Your Trusted Fuel Marketplace</p>
     <p>Founder and Project Lead: Yusuf Muhammad</p>
-    <p>© 2026 FuelConnect Nigeria</p>
+    <p>Platform Language: English</p>
+    <p>&copy; 2026 FuelConnect Nigeria. All rights reserved.</p>
   </footer>
-<script src="script.js"></script>
+
+  <script src="script.js"></script>
 </body>
 </html>
