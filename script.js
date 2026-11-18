@@ -7,10 +7,15 @@ import {
   getFirestore
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
-// Za a saka Firebase configuration ɗinku a nan bayan mun duba shi.
 const firebaseConfig = {
-  // Kada ku ƙirƙiri ko ku saka wani bayani a nan tukuna.
-};
+    apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
+    authDomain: "fuelconnect-nigeria.firebaseapp.com",
+    projectId: "fuelconnect-nigeria",
+    storageBucket: "fuelconnect-nigeria.firebasestorage.app",
+    messagingSenderId: "346356529363",
+    appId: "1:346356529363:web:e3ba160b4dd76f1ae5fc26",
+    measurementId: "G-YNT0B08YF1"
+  };
 
 document.addEventListener("DOMContentLoaded", function () {
   const buttons = document.querySelectorAll(".button");
