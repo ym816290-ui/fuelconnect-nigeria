@@ -70,8 +70,14 @@ a { color: #087b3e; }
 <label for="phone">Phone Number</label>
 <input id="phone" type="tel" required>
 
-<label for="email">Email Address (Optional)</label>
-<input id="email" type="email">
+<label for="email">Email Address</label>
+<input id="email" type="email" required>
+
+<label for="password">Create Password</label>
+<input id="password" type="password" minlength="8" required>
+
+<label for="confirmPassword">Confirm Password</label>
+<input id="confirmPassword" type="password" minlength="8" required>
 
 <label for="state">State</label>
 <select id="state" required>
@@ -123,8 +129,117 @@ a { color: #087b3e; }
 <p><a href="index.html">Back to Home</a></p>
 </div>
 
-<script>
-document.getElementById("buyerForm").addEventListener("submit", function(event) {
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  reload
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
+// Copy the exact firebaseConfig object from your login.js file.
+const firebaseConfig = {
+  // Paste your existing Firebase configuration fields here.
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const form = document.getElementById("buyerForm");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const fullname = document.getElementById("fullname").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const state = document.getElementById("state").value;
+  const product = document.getElementById("product").value;
+  const quantity = document.getElementById("quantity").value.trim();
+  const location = document.getElementById("location").value.trim();
+
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  try {
+    let user = auth.currentUser;
+
+    if (!user) {
+      const result = await createUserWithEmailAndPassword(
+        auth, email, password
+      );
+
+      user = result.user;
+      await sendEmailVerification(user);
+
+      alert("Account created. Please verify your email, then return here and submit your registration again.");
+      return;
+    }
+
+    if (user.email !== email) {
+      alert("Please use the email address of your signed-in account.");
+      return;
+    }
+
+    await reload(user);
+
+    if (!user.emailVerified) {
+      alert("Please verify your email first, then submit again.");
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+    const existing = await getDoc(userRef);
+
+    if (existing.exists()) {
+      alert("This account already has a profile. Please contact support.");
+      return;
+    }
+
+    const buyerData = {
+      fullname,
+      phone,
+      email: user.email,
+      state,
+      product,
+      location,
+      role: "buyer",
+      status: "pending",
+      createdAt: serverTimestamp()
+    };
+
+    if (quantity) {
+      buyerData.quantity = quantity;
+    }
+
+    await setDoc(userRef, buyerData);
+
+    alert("Buyer registration submitted successfully. Your account is pending approval.");
+    form.reset();
+
+  } catch (error) {
+    console.error("Buyer registration error:", error);
+    alert(error.message || "Registration failed. Please try again.");
+  }
+});
+</script>
+ .addEventListener("submit", function(event) {
   event.preventDefault();
   alert("Thank you. This demonstration form is not connected to a registration system yet.");
 });
