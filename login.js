@@ -62,7 +62,11 @@ if (loginForm && loginMessage) {
         return;
       }
 
-      loginMessage.textContent = "Login successful!";
+      if (userData.role === "super_admin") {
+  window.location.href = "admin.html";
+} else {
+  loginMessage.textContent = "Login successful!";
+}
     } catch (error) {
       console.error("FuelConnect login error:", error);
 
