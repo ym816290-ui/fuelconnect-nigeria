@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FuelConnect Nigeria - Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    .admin-card {
+      background: #fff;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .admin-card h2 { color: #168044; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FuelConnect Nigeria</h1>
+    <p>Super Admin Dashboard</p>
+  </header>
+
+  <main class="admin-container">
+    <h2>Welcome, Super Admin</h2>
+    <p>You are signed in to the FuelConnect admin area.</p>
+
+    <section class="admin-card">
+      <h2>Dashboard Overview</h2>
+      <p>Welcome to FuelConnect Nigeria administration.</p>
+      <p>Buyer and supplier management features are not yet connected.</p>
+    </section>
+
+    <section class="admin-card">
+      <h2>System Status</h2>
+      <p>Authentication: Firebase</p>
+      <p>Database: Cloud Firestore</p>
+      <p>Dashboard: Initial setup</p>
+    </section>
+
+    <button id="logoutButton">Sign Out</button>
+    <p id="adminMessage" role="status"></p>
+  </main>
+
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc }
+      from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "PASTE_YOUR_EXISTING_FIREBASE_API_KEY",
+      authDomain: "fuelconnect-nigeria.firebaseapp.com",
+      projectId: "fuelconnect-nigeria",
+      storageBucket: "fuelconnect-nigeria.firebasestorage.app",
+      messagingSenderId: "PASTE_YOUR_EXISTING_SENDER_ID",
+      appId: "PASTE_YOUR_EXISTING_APP_ID",
+      measurementId: "PASTE_YOUR_EXISTING_MEASUREMENT_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const message = document.getElementById("adminMessage");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.replace("login.html");
+        return;
+      }
+
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+
+        if (!userSnap.exists() ||
+            userSnap.data().role !== "super_admin" ||
+            userSnap.data().status !== "active") {
+          await signOut(auth);
+          window.location.replace("login.html");
+          return;
+        }
+      } catch (error) {
+        message.textContent = "Unable to verify admin access.";
+        console.error(error);
+      }
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.replace("login.html");
+    });
+  </script>
+</body>
+</html>
