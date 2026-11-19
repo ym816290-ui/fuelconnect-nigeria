@@ -22,7 +22,43 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("FuelConnect Nigeria Web App loaded successfully.");
 });
 
+const firebaseConfig = {
+    apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
+    authDomain: "fuelconnect-nigeria.firebaseapp.com",
+    projectId: "fuelconnect-nigeria",
+    storageBucket: "fuelconnect-nigeria.firebasestorage.app",
+    messagingSenderId: "346356529363",
+    appId: "1:346356529363:web:e3ba160b4dd76f1ae5fc26",
+    measurementId: "G-YNT0B08YF1"
+  };// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
+// Initialize Firebase Authentication
+const auth = getAuth(app);
+
+// Initialize Cloud Firestore
+const db = getFirestore(app);
+
+// Monitor authentication state
+onAuthStateChanged(auth, function (user) {
+  if (user) {
+    console.log("User is signed in.");
+  } else {
+    console.log("No user is signed in.");
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const buttons = document.querySelectorAll(".button");
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      console.log("Welcome to FuelConnect Nigeria!");
+    });
+  });
+
+  console.log("FuelConnect Nigeria Web App loaded successfully.");
+});
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
