@@ -204,6 +204,7 @@ form.addEventListener("submit", async (event) => {
     }
 
     await reload(user);
+    await user.getIdToken(true);
 
     if (!user.emailVerified) {
       alert("Please verify your email first, then submit again.");
