@@ -27,11 +27,8 @@
       <label for="email">Business Email Address</label>
       <input id="email" type="email" required>
 
-      <label for="password">Create Password</label>
+      <label for="password">Password</label>
       <input id="password" type="password" minlength="8" required>
-
-      <label for="confirmPassword">Confirm Password</label>
-      <input id="confirmPassword" type="password" minlength="8" required>
 
       <label for="state">State</label>
       <select id="state" required>
@@ -68,124 +65,48 @@
         <option value="Multiple Products">Multiple Products</option>
       </select>
 
-      <label for="licence">Licence Type or Reference (if applicable)</label>
+      <label for="licence">Licence Type or Reference</label>
       <input id="licence" type="text">
 
       <label for="location">Business Address / Location</label>
       <textarea id="location" required></textarea>
 
-      <button type="submit">Submit Supplier Registration</button>
+      <button type="submit" id="submitButton">
+        Submit Supplier Registration
+      </button>
+
       <p id="supplierMessage" role="status"></p>
     </form>
 
-    <p>Supplier accounts remain pending until their business details and applicable regulatory licences are reviewed. Registration does not constitute licence verification or approval.</p>
+    <p>
+      Supplier accounts remain pending until business details and
+      applicable regulatory licences are reviewed. Registration
+      does not mean licence verification or approval.
+    </p>
   </main>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+
     import {
-      getAuth, createUserWithEmailAndPassword,
-      sendEmailVerification, reload
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification,
+      reload
     } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+
     import {
-      getFirestore, doc, getDoc, setDoc, serverTimestamp
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
+    // Replace these values with the exact config from buyer-register.html
     const firebaseConfig = {
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Supplier Registration - FuelConnect Nigeria</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header>
-    <h1>FuelConnect Nigeria</h1>
-    <h2>Supplier Registration</h2>
-  </header>
-
-  <main>
-    <form id="supplierForm">
-      <label for="business">Business Name</label>
-      <input id="business" type="text" required>
-
-      <label for="fullname">Contact Person's Full Name</label>
-      <input id="fullname" type="text" required>
-
-      <label for="phone">Business Phone Number</label>
-      <input id="phone" type="tel" required>
-
-      <label for="email">Business Email Address</label>
-      <input id="email" type="email" required>
-
-      <label for="password">Create Password</label>
-      <input id="password" type="password" minlength="8" required>
-
-      <label for="confirmPassword">Confirm Password</label>
-      <input id="confirmPassword" type="password" minlength="8" required>
-
-      <label for="state">State</label>
-      <select id="state" required>
-        <option value="">Select State</option>
-        <option>Abia</option><option>Adamawa</option>
-        <option>Akwa Ibom</option><option>Anambra</option>
-        <option>Bauchi</option><option>Bayelsa</option>
-        <option>Benue</option><option>Borno</option>
-        <option>Cross River</option><option>Delta</option>
-        <option>Ebonyi</option><option>Edo</option>
-        <option>Ekiti</option><option>Enugu</option>
-        <option>FCT</option><option>Gombe</option>
-        <option>Imo</option><option>Jigawa</option>
-        <option>Kaduna</option><option>Kano</option>
-        <option>Katsina</option><option>Kebbi</option>
-        <option>Kogi</option><option>Kwara</option>
-        <option>Lagos</option><option>Nasarawa</option>
-        <option>Niger</option><option>Ogun</option>
-        <option>Ondo</option><option>Osun</option>
-        <option>Oyo</option><option>Plateau</option>
-        <option>Rivers</option><option>Sokoto</option>
-        <option>Taraba</option><option>Yobe</option>
-        <option>Zamfara</option>
-      </select>
-
-      <label for="products">Products Supplied</label>
-      <select id="products" required>
-        <option value="">Select Product</option>
-        <option value="PMS">PMS</option>
-        <option value="AGO">AGO</option>
-        <option value="DPK">DPK</option>
-        <option value="ATK">ATK</option>
-        <option value="LPG">LPG</option>
-        <option value="Multiple Products">Multiple Products</option>
-      </select>
-
-      <label for="licence">Licence Type or Reference (if applicable)</label>
-      <input id="licence" type="text">
-
-      <label for="location">Business Address / Location</label>
-      <textarea id="location" required></textarea>
-
-      <button type="submit">Submit Supplier Registration</button>
-      <p id="supplierMessage" role="status"></p>
-    </form>
-
-    <p>Supplier accounts remain pending until their business details and applicable regulatory licences are reviewed. Registration does not constitute licence verification or approval.</p>
-  </main>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
-    import {
-      getAuth, createUserWithEmailAndPassword,
-      sendEmailVerification, reload
-    } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
+        apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
   authDomain: "fuelconnect-nigeria.firebaseapp.com",
   projectId: "fuelconnect-nigeria",
   storageBucket: "fuelconnect-nigeria.firebasestorage.app",
@@ -200,43 +121,58 @@
 
     const form = document.getElementById("supplierForm");
     const message = document.getElementById("supplierMessage");
+    const button = document.getElementById("submitButton");
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-
-      if (password !== confirmPassword) {
-        message.textContent = "Passwords do not match.";
-        return;
-      }
-
       const email = document.getElementById("email").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
+
+      button.disabled = true;
+      message.textContent = "Please wait...";
 
       try {
-        message.textContent = "Creating supplier account...";
+        let user = auth.currentUser;
 
-        const credential = await createUserWithEmailAndPassword(
-          auth, email, password
-        );
+        if (!user) {
+          try {
+            const credential = await createUserWithEmailAndPassword(
+              auth, email, password
+            );
+            user = credential.user;
+            await sendEmailVerification(user);
 
-        const user = credential.user;
+            message.textContent =
+              "Verification email sent. Verify your email, then return here and submit this form again.";
 
-        await sendEmailVerification(user);
+            button.disabled = false;
+            return;
 
-        message.textContent =
-          "Verification email sent. Verify your email, then return and submit this form again.";
-
-        await new Promise(resolve => {
-          const check = setInterval(async () => {
-            await reload(user);
-            if (user.emailVerified) {
-              clearInterval(check);
-              resolve();
+          } catch (error) {
+            if (error.code !== "auth/email-already-in-use") {
+              throw error;
             }
-          }, 3000);
-        });
+
+            const credential = await signInWithEmailAndPassword(
+              auth, email, password
+            );
+            user = credential.user;
+          }
+        }
+
+        if (user.email.toLowerCase() !== email) {
+          throw new Error("Please sign in with the email entered in this form.");
+        }
+
+        await reload(user);
+
+        if (!user.emailVerified) {
+          message.textContent =
+            "Please verify your email first. Open the verification email, then submit this form again.";
+          button.disabled = false;
+          return;
+        }
 
         await user.getIdToken(true);
 
@@ -244,8 +180,7 @@
         const existing = await getDoc(userRef);
 
         if (existing.exists()) {
-          message.textContent = "This account is already registered.";
-          return;
+          throw new Error("This account already has a registered profile.");
         }
 
         const supplierData = {
@@ -265,105 +200,19 @@
         await setDoc(userRef, supplierData);
 
         message.textContent =
-          "Supplier registration submitted successfully. Your account is pending review.";
+          "Supplier registration submitted. Your account is pending review.";
+
         form.reset();
 
       } catch (error) {
         console.error(error);
         message.textContent =
-          error.code === "auth/email-already-in-use"
-            ? "This email already has an account."
-            : "Registration could not be completed: " + error.message;
+          "Registration error: " + error.message;
+      } finally {
+        button.disabled = false;
       }
     });
   </script>
 </body>
 </html>
 
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const form = document.getElementById("supplierForm");
-    const message = document.getElementById("supplierMessage");
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-
-      if (password !== confirmPassword) {
-        message.textContent = "Passwords do not match.";
-        return;
-      }
-
-      const email = document.getElementById("email").value.trim().toLowerCase();
-
-      try {
-        message.textContent = "Creating supplier account...";
-
-        const credential = await createUserWithEmailAndPassword(
-          auth, email, password
-        );
-
-        const user = credential.user;
-
-        await sendEmailVerification(user);
-
-        message.textContent =
-          "Verification email sent. Verify your email, then return and submit this form again.";
-
-        await new Promise(resolve => {
-          const check = setInterval(async () => {
-            await reload(user);
-            if (user.emailVerified) {
-              clearInterval(check);
-              resolve();
-            }
-          }, 3000);
-        });
-
-        await user.getIdToken(true);
-
-        const userRef = doc(db, "users", user.uid);
-        const existing = await getDoc(userRef);
-
-        if (existing.exists()) {
-          message.textContent = "This account is already registered.";
-          return;
-        }
-
-        const supplierData = {
-          business: document.getElementById("business").value.trim(),
-          fullname: document.getElementById("fullname").value.trim(),
-          phone: document.getElementById("phone").value.trim(),
-          email: user.email,
-          state: document.getElementById("state").value,
-          products: document.getElementById("products").value,
-          licence: document.getElementById("licence").value.trim(),
-          location: document.getElementById("location").value.trim(),
-          role: "supplier",
-          status: "pending",
-          createdAt: serverTimestamp()
-        };
-
-        await setDoc(userRef, supplierData);
-
-        message.textContent =
-          "Supplier registration submitted successfully. Your account is pending review.";
-        form.reset();
-
-      } catch (error) {
-        console.error(error);
-        message.textContent =
-          error.code === "auth/email-already-in-use"
-            ? "This email already has an account."
-            : "Registration could not be completed: " + error.message;
-      }
-    });
-  </script>
-</body>
-</html>
