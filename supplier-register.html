@@ -94,6 +94,7 @@
       signInWithEmailAndPassword,
       sendEmailVerification,
       reload
+      signOut
     } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
     import {
@@ -134,6 +135,11 @@
 
       try {
         let user = auth.currentUser;
+
+if (user && user.email.toLowerCase() !== email) {
+  await signOut(auth);
+  user = null;
+}
 
         if (!user) {
           try {
