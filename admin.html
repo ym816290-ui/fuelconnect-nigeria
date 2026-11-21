@@ -125,13 +125,21 @@ function updateCounts(users) {
   (!role || u.role===role) && (!status || u.status===status)
  ).length;
 
- document.getElementById("totalCount").textContent=users.length;
- document.getElementById("buyerCount").textContent=count("buyer");
- document.getElementById("supplierCount").textContent=count("supplier");
- document.getElementById("pendingCount").textContent=count(null,"pending");
- document.getElementById("activeCount").textContent=count(null,"active");
- document.getElementById("rejectedCount").textContent=count(null,"rejected");
+ 
+function updateCounts(users) {
+ const count = (role, status) => users.filter(item =>
+  (!role || item.data.role === role) &&
+  (!status || item.data.status === status)
+ ).length;
+
+ document.getElementById("totalCount").textContent = users.length;
+ document.getElementById("buyerCount").textContent = count("buyer");
+ document.getElementById("supplierCount").textContent = count("supplier");
+ document.getElementById("pendingCount").textContent = count(null, "pending");
+ document.getElementById("activeCount").textContent = count(null, "active");
+ document.getElementById("rejectedCount").textContent = count(null, "rejected");
 }
+
 
 function renderUsers() {
  const search=document.getElementById("searchInput").value.toLowerCase().trim();
