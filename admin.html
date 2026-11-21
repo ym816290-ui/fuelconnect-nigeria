@@ -2,102 +2,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FuelConnect Nigeria - Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    .admin-container {
-      max-width: 1000px;
-      margin: 30px auto;
-      padding: 20px;
-    }
-    .admin-card {
-      background: #fff;
-      padding: 20px;
-      margin: 15px 0;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px #0001;
-    }
-    .admin-card h2 { color: #168044; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuelConnect Nigeria - Super Admin</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{background:#f4f7f5;margin:0;font-family:Arial,sans-serif;color:#26352c}
+header{background:#08783e;color:white;padding:22px;text-align:center}
+header h1{margin:0}
+.container{max-width:1100px;margin:25px auto;padding:15px}
+.topbar,.card{background:white;padding:18px;border-radius:12px;margin-bottom:18px;box-shadow:0 2px 8px #00000012}
+button,select,input{padding:11px;border-radius:7px;border:1px solid #ccc;margin:5px;font-size:14px}
+button{background:#08783e;color:white;border:0;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.reject{background:#bd332b}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{background:#edf7f0;padding:15px;border-radius:9px}
+.stat strong{display:block;font-size:25px;color:#08783e;margin-top:7px}
+.user-card{border:1px solid #e2e8e3;padding:15px;border-radius:9px;margin:12px 0}
+.user-card h3{color:#08783e;margin-top:0}
+.details{line-height:1.8;overflow-wrap:anywhere}
+.muted{color:#66736a;font-size:13px}
+#message{font-weight:bold}
+@media(max-width:600px){.container{padding:10px}.topbar,.card{padding:13px}button,input,select{max-width:100%}}
+</style>
 </head>
 <body>
-  <header>
-    <h1>FuelConnect Nigeria</h1>
-    <p>Super Admin Dashboard</p>
-  </header>
+<header>
+<h1>FuelConnect Nigeria</h1>
+<p>Super Admin Control Centre</p>
+</header>
 
-  <main class="admin-container">
-    <h2>Welcome, Super Admin</h2>
-    <p>You are signed in to the FuelConnect admin area.</p>
+<main class="container">
+<section class="topbar">
+<h2>Welcome, Super Admin</h2>
+<p>Manage buyer and supplier registration requests.</p>
+<button id="refreshButton">Refresh Data</button>
+<button id="logoutButton">Sign Out</button>
+<p id="message" role="status">Checking administrator access...</p>
+</section>
 
-    <section class="admin-card">
-      <h2>Dashboard Overview</h2>
-      <p>Welcome to FuelConnect Nigeria administration.</p>
-      <p>Buyer and supplier management features are not yet connected.</p>
-    </section>
+<section class="card">
+<h2>Dashboard Overview</h2>
+<div class="stats">
+<div class="stat">All Users<strong id="totalCount">0</strong></div>
+<div class="stat">Buyers<strong id="buyerCount">0</strong></div>
+<div class="stat">Suppliers<strong id="supplierCount">0</strong></div>
+<div class="stat">Pending<strong id="pendingCount">0</strong></div>
+<div class="stat">Active<strong id="activeCount">0</strong></div>
+<div class="stat">Rejected<strong id="rejectedCount">0</strong></div>
+</div>
+</section>
 
-    <section class="admin-card">
-      <h2>System Status</h2>
-      <p>Authentication: Firebase</p>
-      <p>Database: Cloud Firestore</p>
-      <p>Dashboard: Initial setup</p>
-    </section>
+<section class="card">
+<h2>Buyer & Supplier Management</h2>
+<input id="searchInput" type="search" placeholder="Search name, email or business">
+<select id="roleFilter">
+<option value="all">All Account Types</option>
+<option value="buyer">Buyers</option>
+<option value="supplier">Suppliers</option>
+</select>
+<select id="statusFilter">
+<option value="all">All Statuses</option>
+<option value="pending">Pending</option>
+<option value="active">Active</option>
+<option value="rejected">Rejected</option>
+<option value="suspended">Suspended</option>
+</select>
+<div id="usersList">Loading registrations...</div>
+</section>
 
-    <button id="logoutButton">Sign Out</button>
-    <p id="adminMessage" role="status"></p>
-  </main>
+<section class="card">
+<h2>System Status</h2>
+<p>Authentication: Firebase</p>
+<p>Database: Cloud Firestore</p>
+<p>Admin access: Protected by Firestore Security Rules</p>
+<p class="muted">This is the initial management dashboard. Reports, audit logs and advanced settings are not yet connected.</p>
+</section>
+</main>
 
-  <script type="module">
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc }
-      from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+import {
+ getFirestore, collection, getDocs, doc, getDoc, updateDoc
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
+/* Keep the same Firebase configuration used in your existing admin.html */
+const firebaseConfig = {
+  apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
       authDomain: "fuelconnect-nigeria.firebaseapp.com",
       projectId: "fuelconnect-nigeria",
       storageBucket: "fuelconnect-nigeria.firebasestorage.app",
       messagingSenderId: "346356529363",
       appId: "1:346356529363:web:e3ba160b4dd76f1ae5fc26",
       measurementId: "G-YNT0B08YF1"
-    };
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const message = document.getElementById("adminMessage");
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.replace("login.html");
-        return;
-      }
+const message = document.getElementById("message");
+const usersList = document.getElementById("usersList");
+let allUsers = [];
+let currentAdmin = null;
 
-      try {
-        const userSnap = await getDoc(doc(db, "users", user.uid));
+function showMessage(text) {
+ message.textContent = text;
+}
 
-        if (!userSnap.exists() ||
-            userSnap.data().role !== "super_admin" ||
-            userSnap.data().status !== "active") {
-          await signOut(auth);
-          window.location.replace("login.html");
-          return;
-        }
-      } catch (error) {
-        message.textContent = "Unable to verify admin access.";
-        console.error(error);
-      }
-    });
+function addText(parent, tag, value, className="") {
+ const element = document.createElement(tag);
+ element.textContent = value ?? "";
+ if(className) element.className = className;
+ parent.appendChild(element);
+ return element;
+}
 
-    document.getElementById("logoutButton").addEventListener("click", async () => {
-      await signOut(auth);
-      window.location.replace("login.html");
-    });
-  </script>
+function updateCounts(users) {
+ const count = (role,status) => users.filter(u =>
+  (!role || u.role===role) && (!status || u.status===status)
+ ).length;
+
+ document.getElementById("totalCount").textContent=users.length;
+ document.getElementById("buyerCount").textContent=count("buyer");
+ document.getElementById("supplierCount").textContent=count("supplier");
+ document.getElementById("pendingCount").textContent=count(null,"pending");
+ document.getElementById("activeCount").textContent=count(null,"active");
+ document.getElementById("rejectedCount").textContent=count(null,"rejected");
+}
+
+function renderUsers() {
+ const search=document.getElementById("searchInput").value.toLowerCase().trim();
+ const role=document.getElementById("roleFilter").value;
+ const status=document.getElementById("statusFilter").value;
+
+ usersList.replaceChildren();
+
+ const filtered=allUsers.filter(user=>{
+  const data=user.data;
+  const name=(data.fullname||"").toLowerCase();
+  const business=(data.business||"").toLowerCase();
+  const email=(data.email||"").toLowerCase();
+  return (role==="all"||data.role===role) &&
+   (status==="all"||data.status===status) &&
+   (name.includes(search)||business.includes(search)||email.includes(search));
+ });
+
+ if(filtered.length===0){
+  addText(usersList,"p","No matching accounts found.");
+  return;
+ }
+
+ filtered.forEach(user=>{
+  const data=user.data;
+  const card=document.createElement("article");
+  card.className="user-card";
+
+  addText(card,"h3",data.business || data.fullname || "Registered User");
+  addText(card,"p","Account Type: "+(data.role||"Not specified"));
+  addText(card,"p","Status: "+(data.status||"Not specified"));
+
+  const details=document.createElement("div");
+  details.className="details";
+  addText(details,"p","Full Name: "+(data.fullname||"Not provided"));
+  addText(details,"p","Email: "+(data.email||"Not provided"));
+  addText(details,"p","Phone: "+(data.phone||"Not provided"));
+  addText(details,"p","State: "+(data.state||"Not provided"));
+  addText(details,"p","Location: "+(data.location||"Not provided"));
+
+  if(data.role==="buyer"){
+   addText(details,"p","Product: "+(data.product||"Not provided"));
+   addText(details,"p","Quantity: "+(data.quantity||"Not provided"));
+  }
+
+  if(data.role==="supplier"){
+   addText(details,"p","Products: "+(Array.isArray(data.products)?data.products.join(", "):(data.products||"Not provided")));
+   addText(details,"p","Licence: "+(data.licence||"Not provided"));
+  }
+
+  card.appendChild(details);
+
+  if(data.status==="pending" && ["buyer","supplier"].includes(data.role)){
+   const approve=document.createElement("button");
+   approve.textContent="Approve";
+   approve.addEventListener("click",()=>changeStatus(user.id,"active"));
+   card.appendChild(approve);
+
+   const reject=document.createElement("button");
+   reject.textContent="Reject";
+   reject.className="reject";
+   reject.addEventListener("click",()=>changeStatus(user.id,"rejected"));
+   card.appendChild(reject);
+  }
+
+  usersList.appendChild(card);
+ });
+}
+
+async function loadUsers() {
+ if(!currentAdmin) return;
+ showMessage("Loading account records...");
+ usersList.textContent="Loading...";
+ try {
+  const snapshot=await getDocs(collection(db,"users"));
+  allUsers=snapshot.docs
+   .map(item=>({id:item.id,data:item.data()}))
+   .filter(item=>["buyer","supplier"].includes(item.data.role));
+  updateCounts(allUsers);
+  renderUsers();
+  showMessage("Account records loaded successfully.");
+ } catch(error) {
+  console.error(error);
+  usersList.textContent="Unable to load records.";
+  showMessage("Could not load records. Check Firestore permissions and connection.");
+ }
+}
+
+async function changeStatus(userId,newStatus) {
+ const action=newStatus==="active"?"approve":"reject";
+ if(!confirm("Are you sure you want to "+action+" this account?")) return;
+
+ try {
+  await updateDoc(doc(db,"users",userId),{status:newStatus});
+  showMessage("Account status updated successfully.");
+  await loadUsers();
+ } catch(error) {
+  console.error(error);
+  showMessage("Status update failed. Check permissions and account status.");
+ }
+}
+
+onAuthStateChanged(auth,async user=>{
+ if(!user){
+  window.location.replace("login.html");
+  return;
+ }
+
+ try {
+  const adminDoc=await getDoc(doc(db,"users",user.uid));
+  if(!adminDoc.exists() ||
+     adminDoc.data().role!=="super_admin" ||
+     adminDoc.data().status!=="active"){
+   await signOut(auth);
+   window.location.replace("login.html");
+   return;
+  }
+  currentAdmin=user;
+  showMessage("Administrator access verified.");
+  await loadUsers();
+ } catch(error) {
+  console.error(error);
+  showMessage("Unable to verify administrator access.");
+ }
+});
+
+document.getElementById("refreshButton").addEventListener("click",loadUsers);
+document.getElementById("searchInput").addEventListener("input",renderUsers);
+document.getElementById("roleFilter").addEventListener("change",renderUsers);
+document.getElementById("statusFilter").addEventListener("change",renderUsers);
+
+document.getElementById("logoutButton").addEventListener("click",async()=>{
+ await signOut(auth);
+ window.location.replace("login.html");
+});
+</script>
 </body>
 </html>
