@@ -120,10 +120,6 @@ function addText(parent, tag, value, className="") {
  return element;
 }
 
-function updateCounts(users) {
- const count = (role,status) => users.filter(u =>
-  (!role || u.role===role) && (!status || u.status===status)
- ).length;
 
  
 function updateCounts(users) {
