@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyer Dashboard - FuelConnect Nigeria</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h2>FuelConnect Nigeria</h2>
+  <p>Your Trusted Fuel Marketplace</p>
+</header>
+
+<main class="login-container">
+  <h1>Buyer Dashboard</h1>
+  <p id="welcome">Loading your account...</p>
+
+  <section class="card">
+    <h2>My Account</h2>
+    <div id="accountDetails">Loading account details...</div>
+  </section>
+
+  <section class="card">
+    <h2>Account Status</h2>
+    <p id="accountStatus">Checking account status...</p>
+  </section>
+
+  <button type="button" id="signOutButton">Sign Out</button>
+  <p id="dashboardMessage" role="status"></p>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDzYN13ha9KSS4Q6CNn4GiegCzeNdLfI5I",
+  authDomain: "fuelconnect-nigeria.firebaseapp.com",
+  projectId: "fuelconnect-nigeria",
+  storageBucket: "fuelconnect-nigeria.firebasestorage.app",
+  messagingSenderId: "346356529363",
+  appId: "1:346356529363:web:e3ba160b4dd76f1ae5fc26",
+  measurementId: "G-YNT0B08YF1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const welcome = document.getElementById("welcome");
+const accountDetails = document.getElementById("accountDetails");
+const accountStatus = document.getElementById("accountStatus");
+const dashboardMessage = document.getElementById("dashboardMessage");
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await signOut(auth);
+      window.location.replace("login.html");
+      return;
+    }
+
+    const data = userSnap.data();
+
+    if (data.role !== "buyer") {
+      await signOut(auth);
+      window.location.replace("login.html");
+      return;
+    }
+
+    welcome.textContent = "Welcome, " + (data.fullname || "Buyer");
+
+    accountDetails.replaceChildren();
+
+    const fields = [
+      ["Full Name", data.fullname],
+      ["Email", data.email],
+      ["Phone", data.phone],
+      ["State", data.state],
+      ["Product Required", data.product],
+      ["Estimated Quantity", data.quantity],
+      ["Location", data.location]
+    ];
+
+    fields.forEach(([label, value]) => {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = label + ": " + (value || "Not provided");
+      accountDetails.appendChild(paragraph);
+    });
+
+    accountStatus.textContent =
+      "Your account status: " + (data.status || "Unknown");
+
+    if (data.status === "pending") {
+      dashboardMessage.textContent =
+        "Your account is awaiting Admin approval.";
+    } else if (data.status === "active") {
+      dashboardMessage.textContent =
+        "Your Buyer account is active.";
+    } else {
+      dashboardMessage.textContent =
+        "Your account is not currently active. Please contact support.";
+    }
+
+  } catch (error) {
+    console.error(error);
+    dashboardMessage.textContent =
+      "Unable to load account details. Please try again.";
+  }
+});
+
+document.getElementById("signOutButton").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.replace("login.html");
+  } catch (error) {
+    dashboardMessage.textContent = "Unable to sign out. Please try again.";
+  }
+});
+</script>
+
+</body>
+</html>
