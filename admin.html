@@ -137,6 +137,7 @@ function updateCounts(users) {
 }
 
 
+
 function renderUsers() {
  const search=document.getElementById("searchInput").value.toLowerCase().trim();
  const role=document.getElementById("roleFilter").value;
@@ -149,6 +150,7 @@ function renderUsers() {
   const name=(data.fullname||"").toLowerCase();
   const business=(data.business||"").toLowerCase();
   const email=(data.email||"").toLowerCase();
+
   return (role==="all"||data.role===role) &&
    (status==="all"||data.status===status) &&
    (name.includes(search)||business.includes(search)||email.includes(search));
@@ -170,6 +172,7 @@ function renderUsers() {
 
   const details=document.createElement("div");
   details.className="details";
+
   addText(details,"p","Full Name: "+(data.fullname||"Not provided"));
   addText(details,"p","Email: "+(data.email||"Not provided"));
   addText(details,"p","Phone: "+(data.phone||"Not provided"));
@@ -184,15 +187,46 @@ function renderUsers() {
   if(data.role==="supplier"){
    addText(details,"p","Products: "+(Array.isArray(data.products)?data.products.join(", "):(data.products||"Not provided")));
    addText(details,"p","Licence: "+(data.licence||"Not provided"));
+   addText(details,"p","Licence Verification: "+(data.licenceVerification||"unverified"));
   }
 
   card.appendChild(details);
 
+  if(data.status==="pending" && data.role==="supplier"){
+   if(data.licenceVerification!=="verified"){
+    const verify=document.createElement("button");
+    verify.textContent="Verify Licence";
+
+    verify.addEventListener("click",async()=>{
+     if(!confirm("Have you independently verified this supplier licence with the appropriate authority? Only continue if verification is complete.")){
+      return;
+     }
+
+     try{
+      await updateDoc(doc(db,"users",user.id),{
+       licenceVerification:"verified"
+      });
+      alert("Licence marked as verified.");
+      await loadUsers();
+     }catch(error){
+      console.error(error);
+      alert("Could not verify licence. Please check your access and try again.");
+     }
+    });
+
+    card.appendChild(verify);
+   }else{
+    addText(card,"p","Licence is marked VERIFIED.");
+   }
+  }
+
   if(data.status==="pending" && ["buyer","supplier"].includes(data.role)){
-   const approve=document.createElement("button");
-   approve.textContent="Approve";
-   approve.addEventListener("click",()=>changeStatus(user.id,"active"));
-   card.appendChild(approve);
+   if(data.role==="buyer" || data.licenceVerification==="verified"){
+    const approve=document.createElement("button");
+    approve.textContent="Approve";
+    approve.addEventListener("click",()=>changeStatus(user.id,"active"));
+    card.appendChild(approve);
+   }
 
    const reject=document.createElement("button");
    reject.textContent="Reject";
@@ -204,6 +238,7 @@ function renderUsers() {
   usersList.appendChild(card);
  });
 }
+
 
 async function loadUsers() {
  if(!currentAdmin) return;
