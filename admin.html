@@ -259,19 +259,57 @@ async function loadUsers() {
  }
 }
 
-async function changeStatus(userId,newStatus) {
- const action=newStatus==="active"?"approve":"reject";
- if(!confirm("Are you sure you want to "+action+" this account?")) return;
+
+async function changeStatus(userId, newStatus) {
+ const action = newStatus === "active"
+  ? "approve"
+  : newStatus === "rejected"
+  ? "reject"
+  : "suspend";
+
+ if (!confirm("Are you sure you want to " + action + " this account?")) {
+  return;
+ }
 
  try {
-  await updateDoc(doc(db,"users",userId),{status:newStatus});
+  const batch = writeBatch(db);
+  const userRef = doc(db, "users", userId);
+  const logRef = doc(collection(db, "auditLogs"));
+
+  const target = allUsers.find(user => user.id === userId);
+  if (!target) {
+   throw new Error("Account not found.");
+  }
+
+  batch.update(userRef, {
+   status: newStatus,
+   statusUpdatedBy: auth.currentUser.uid,
+   statusUpdatedAt: serverTimestamp()
+  });
+
+  batch.set(logRef, {
+   action: newStatus === "active"
+    ? "account_approved"
+    : newStatus === "rejected"
+    ? "account_rejected"
+    : "account_suspended",
+   targetUserId: userId,
+   targetEmail: target.data.email || "",
+   adminUid: auth.currentUser.uid,
+   createdAt: serverTimestamp()
+  });
+
+  await batch.commit();
+
   showMessage("Account status updated successfully.");
   await loadUsers();
+
  } catch(error) {
   console.error(error);
   showMessage("Status update failed. Check permissions and account status.");
  }
 }
+
 
 onAuthStateChanged(auth,async user=>{
  if(!user){
