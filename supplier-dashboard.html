@@ -20,25 +20,67 @@
 
   <section class="card">
     <h2>My Supplier Profile</h2>
-    <div id="accountDetails">Loading account details...</div>
+    <div id="accountDetails">Loading...</div>
   </section>
 
   <section class="card">
     <h2>Account Status</h2>
-    <p id="accountStatus">Checking account status...</p>
+    <p id="accountStatus">Checking...</p>
+    <p id="licenceStatus">Checking licence...</p>
+    <p id="dashboardMessage" role="status"></p>
+  </section>
+
+  <section class="card" id="listingSection" hidden>
+    <h2>Publish a Product Listing</h2>
+    <p>List your available petroleum products for Buyers.</p>
+
+    <form id="listingForm">
+      <label for="product">Petroleum Product</label>
+      <select id="product" required>
+        <option value="">Select Product</option>
+        <option value="PMS">PMS - Petrol</option>
+        <option value="AGO">AGO - Diesel</option>
+        <option value="DPK">DPK - Kerosene</option>
+        <option value="ATK">ATK - Aviation Fuel</option>
+        <option value="LPG">LPG - Cooking Gas</option>
+      </select>
+
+      <label for="quantity">Available Quantity</label>
+      <input id="quantity" type="number" min="0.01"
+        step="any" required placeholder="Enter quantity">
+
+      <label for="price">Price per Unit (NGN)</label>
+      <input id="price" type="number" min="0.01"
+        step="any" required placeholder="Enter price">
+
+      <p id="unitLabel">Unit: ₦/L</p>
+
+      <label for="state">State</label>
+      <input id="state" required placeholder="Enter state">
+
+      <label for="location">Product Location</label>
+      <input id="location" required
+        placeholder="Enter product location">
+
+      <button type="submit" id="publishButton">
+        Publish Product
+      </button>
+    </form>
+
+    <p id="listingMessage" role="status"></p>
   </section>
 
   <section class="card">
-    <h2>Licence Verification</h2>
-    <p id="licenceStatus">Checking licence verification...</p>
+    <h2>My Published Listings</h2>
+    <div id="myListings">Loading listings...</div>
   </section>
 
   <button type="button" id="signOutButton">Sign Out</button>
-  <p id="dashboardMessage" role="status"></p>
 </main>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 
 import {
   getAuth,
@@ -49,7 +91,13 @@ import {
 import {
   getFirestore,
   doc,
-  getDoc
+  getDoc,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -71,6 +119,84 @@ const accountDetails = document.getElementById("accountDetails");
 const accountStatus = document.getElementById("accountStatus");
 const licenceStatus = document.getElementById("licenceStatus");
 const dashboardMessage = document.getElementById("dashboardMessage");
+const listingSection = document.getElementById("listingSection");
+const listingForm = document.getElementById("listingForm");
+const listingMessage = document.getElementById("listingMessage");
+const myListings = document.getElementById("myListings");
+const productInput = document.getElementById("product");
+const unitLabel = document.getElementById("unitLabel");
+
+let currentUser = null;
+let supplierData = null;
+
+productInput.addEventListener("change", () => {
+  unitLabel.textContent =
+    productInput.value === "LPG" ? "Unit: ₦/kg" : "Unit: ₦/L";
+});
+
+function showProfile(data) {
+  accountDetails.replaceChildren();
+
+  const fields = [
+    ["Business Name", data.business],
+    ["Full Name", data.fullname],
+    ["Email", data.email],
+    ["Phone", data.phone],
+    ["State", data.state],
+    ["Business Location", data.location],
+    ["Products Registered", data.products],
+    ["Licence Reference", data.licence]
+  ];
+
+  fields.forEach(([label, value]) => {
+    const p = document.createElement("p");
+    p.textContent = label + ": " + (value || "Not provided");
+    accountDetails.appendChild(p);
+  });
+}
+
+async function loadListings() {
+  myListings.textContent = "Loading listings...";
+
+  try {
+    const listingsQuery = query(
+      collection(db, "listings"),
+      where("supplierId", "==", currentUser.uid)
+    );
+
+    const snapshot = await getDocs(listingsQuery);
+    myListings.replaceChildren();
+
+    if (snapshot.empty) {
+      myListings.textContent = "You have not published any products yet.";
+      return;
+    }
+
+    snapshot.forEach((listingDoc) => {
+      const item = listingDoc.data();
+      const card = document.createElement("div");
+      const title = document.createElement("h3");
+      const details = document.createElement("p");
+
+      title.textContent = item.product;
+      details.textContent =
+        "Quantity: " + item.quantityAvailable +
+        (item.product === "LPG" ? " kg" : " L") +
+        " | Price: ₦" + item.pricePerUnit +
+        (item.product === "LPG" ? "/kg" : "/L") +
+        " | Location: " + item.location +
+        " | Status: " + item.status;
+
+      card.append(title, details);
+      myListings.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error(error);
+    myListings.textContent =
+      "Unable to load listings. Please try again.";
+  }
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -78,9 +204,10 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  currentUser = user;
+
   try {
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
+    const userSnap = await getDoc(doc(db, "users", user.uid));
 
     if (!userSnap.exists()) {
       await signOut(auth);
@@ -88,73 +215,121 @@ onAuthStateChanged(auth, async (user) => {
       return;
     }
 
-    const data = userSnap.data();
+    supplierData = userSnap.data();
 
-    if (data.role !== "supplier") {
+    if (supplierData.role !== "supplier") {
       await signOut(auth);
       window.location.replace("login.html");
       return;
     }
 
-    welcome.textContent = "Welcome, " + (data.fullname || "Supplier");
+    welcome.textContent =
+      "Welcome, " + (supplierData.fullname || "Supplier");
 
-    accountDetails.replaceChildren();
-
-    const fields = [
-      ["Full Name", data.fullname],
-      ["Email", data.email],
-      ["Phone", data.phone],
-      ["Business Name", data.businessName],
-      ["State", data.state],
-      ["Business Location", data.location],
-      ["Licence Type", data.licenceType],
-      ["Licence Reference", data.licenceNumber]
-    ];
-
-    fields.forEach(([label, value]) => {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = label + ": " + (value || "Not provided");
-      accountDetails.appendChild(paragraph);
-    });
+    showProfile(supplierData);
 
     accountStatus.textContent =
-      "Your account status: " + (data.status || "Unknown");
+      "Account Status: " + supplierData.status;
 
-    if (data.licenceVerification === "verified") {
-      licenceStatus.textContent = "Licence verification: Verified";
+    licenceStatus.textContent =
+      "Licence Verification: " +
+      (supplierData.licenceVerification || "Not verified");
+
+    const canPublish =
+      supplierData.status === "active" &&
+      supplierData.licenceVerification === "verified";
+
+    if (canPublish) {
+      listingSection.hidden = false;
+      dashboardMessage.textContent =
+        "Your account is approved. You can publish product listings.";
     } else {
-      licenceStatus.textContent =
-        "Licence verification: Pending or not yet verified";
+      listingSection.hidden = true;
+      dashboardMessage.textContent =
+        "Product publishing is unavailable until your account is active and your licence is verified.";
     }
 
-    if (data.status === "pending") {
-      dashboardMessage.textContent =
-        "Your supplier account is awaiting Admin review.";
-    } else if (data.status === "active") {
-      dashboardMessage.textContent =
-        "Your Supplier account is active.";
-    } else {
-      dashboardMessage.textContent =
-        "Your account is not currently active. Please contact support.";
-    }
+    await loadListings();
 
   } catch (error) {
     console.error(error);
     dashboardMessage.textContent =
-      "Unable to load account details. Please try again.";
+      "Unable to load your account. Please try again.";
   }
 });
 
-document.getElementById("signOutButton").addEventListener("click", async () => {
+listingForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (
+    !currentUser ||
+    !supplierData ||
+    supplierData.status !== "active" ||
+    supplierData.licenceVerification !== "verified"
+  ) {
+    listingMessage.textContent =
+      "Your account must be active and licence verified.";
+    return;
+  }
+
+  const product = productInput.value;
+  const quantity = Number(document.getElementById("quantity").value);
+  const price = Number(document.getElementById("price").value);
+  const state = document.getElementById("state").value.trim();
+  const location = document.getElementById("location").value.trim();
+
+  if (!product || quantity <= 0 || price <= 0 || !state || !location) {
+    listingMessage.textContent = "Please complete all fields correctly.";
+    return;
+  }
+
+  const publishButton = document.getElementById("publishButton");
+  publishButton.disabled = true;
+  listingMessage.textContent = "Publishing product...";
+
   try {
-    await signOut(auth);
-    window.location.replace("login.html");
+    await addDoc(collection(db, "listings"), {
+      supplierId: currentUser.uid,
+      businessName: supplierData.business || "Supplier",
+      product,
+      quantityAvailable: quantity,
+      pricePerUnit: price,
+      state,
+      location,
+      status: "active",
+      createdAt: serverTimestamp()
+    });
+
+    listingMessage.textContent =
+      "Product listing published successfully.";
+
+    listingForm.reset();
+    unitLabel.textContent = "Unit: ₦/L";
+    await loadListings();
+
   } catch (error) {
-    dashboardMessage.textContent =
-      "Unable to sign out. Please try again.";
+    console.error(error);
+    listingMessage.textContent =
+      "Unable to publish. Please check your account and try again.";
+  } finally {
+    publishButton.disabled = false;
   }
 });
+
+document.getElementById("signOutButton").addEventListener(
+  "click",
+  async () => {
+    try {
+      await signOut(auth);
+      window.location.replace("login.html");
+    } catch (error) {
+      dashboardMessage.textContent =
+        "Unable to sign out. Please try again.";
+    }
+  }
+);
 </script>
 
 </body>
 </html>
+
