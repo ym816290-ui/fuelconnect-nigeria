@@ -84,9 +84,18 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+
 import {
- getFirestore, collection, getDocs, doc, getDoc, updateDoc
+ getFirestore,
+ collection,
+ getDocs,
+ doc,
+ getDoc,
+ updateDoc,
+ writeBatch,
+ serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
 
 /* Keep the same Firebase configuration used in your existing admin.html */
 const firebaseConfig = {
