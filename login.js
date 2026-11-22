@@ -41,7 +41,11 @@ if (loginForm && loginMessage) {
     loginMessage.textContent = "Signing in...";
 
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       const userRef = doc(db, "users", result.user.uid);
       const userSnap = await getDoc(userRef);
@@ -55,7 +59,10 @@ if (loginForm && loginMessage) {
 
       const userData = userSnap.data();
 
-      if (userData.status !== "active" || userData.role !== selectedRole) {
+      if (
+        userData.status !== "active" ||
+        userData.role !== selectedRole
+      ) {
         await signOut(auth);
         loginMessage.textContent =
           "Account type or account status is not valid. Please contact support.";
@@ -63,15 +70,23 @@ if (loginForm && loginMessage) {
       }
 
       if (userData.role === "super_admin") {
-  window.location.href = "admin.html";
-} else {
-  loginMessage.textContent = "Login successful!";
-}
+        window.location.href = "admin.html";
+      } else if (userData.role === "buyer") {
+        window.location.href = "buyer-dashboard.html";
+      } else if (userData.role === "supplier") {
+        window.location.href = "supplier-dashboard.html";
+      } else {
+        await signOut(auth);
+        loginMessage.textContent =
+          "Unrecognized account role. Please contact support.";
+      }
+
     } catch (error) {
       console.error("FuelConnect login error:", error);
 
       if (error.code === "auth/invalid-credential") {
-        loginMessage.textContent = "Email or password is incorrect.";
+        loginMessage.textContent =
+          "Email or password is incorrect.";
       } else if (error.code === "permission-denied") {
         loginMessage.textContent =
           "Account access is not configured yet. Please contact support.";
@@ -82,3 +97,4 @@ if (loginForm && loginMessage) {
     }
   });
 }
+
