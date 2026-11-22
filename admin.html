@@ -206,22 +206,42 @@ function renderUsers() {
     const verify=document.createElement("button");
     verify.textContent="Verify Licence";
 
-    verify.addEventListener("click",async()=>{
-     if(!confirm("Have you independently verified this supplier licence with the appropriate authority? Only continue if verification is complete.")){
-      return;
-     }
+    
+verify.addEventListener("click", async () => {
+ if (!confirm("Have you independently verified this supplier licence with the appropriate authority?")) {
+  return;
+ }
 
-     try{
-      await updateDoc(doc(db,"users",user.id),{
-       licenceVerification:"verified"
-      });
-      alert("Licence marked as verified.");
-      await loadUsers();
-     }catch(error){
-      console.error(error);
-      alert("Could not verify licence. Please check your access and try again.");
-     }
-    });
+ try {
+  const batch = writeBatch(db);
+  const userRef = doc(db, "users", user.id);
+  const logRef = doc(collection(db, "auditLogs"));
+
+  batch.update(userRef, {
+   licenceVerification: "verified",
+   licenceVerifiedBy: auth.currentUser.uid,
+   licenceVerifiedAt: serverTimestamp()
+  });
+
+  batch.set(logRef, {
+   action: "supplier_licence_verified",
+   targetUserId: user.id,
+   targetEmail: data.email || "",
+   adminUid: auth.currentUser.uid,
+   createdAt: serverTimestamp()
+  });
+
+  await batch.commit();
+
+  alert("Licence verification recorded successfully.");
+  await loadUsers();
+
+ } catch (error) {
+  console.error(error);
+  alert("Licence verification failed. Please check permissions.");
+ }
+});
+
 
     card.appendChild(verify);
    }else{
