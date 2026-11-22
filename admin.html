@@ -269,6 +269,7 @@ async function loadUsers() {
 }
 
 
+
 async function changeStatus(userId, newStatus) {
  const action = newStatus === "active"
   ? "approve"
@@ -281,14 +282,24 @@ async function changeStatus(userId, newStatus) {
  }
 
  try {
-  const batch = writeBatch(db);
-  const userRef = doc(db, "users", userId);
-  const logRef = doc(collection(db, "auditLogs"));
-
   const target = allUsers.find(user => user.id === userId);
+
   if (!target) {
    throw new Error("Account not found.");
   }
+
+  if (
+   target.data.role === "supplier" &&
+   newStatus === "active" &&
+   target.data.licenceVerification !== "verified"
+  ) {
+   showMessage("Supplier licence must be verified first.");
+   return;
+  }
+
+  const batch = writeBatch(db);
+  const userRef = doc(db, "users", userId);
+  const logRef = doc(collection(db, "auditLogs"));
 
   batch.update(userRef, {
    status: newStatus,
@@ -318,6 +329,8 @@ async function changeStatus(userId, newStatus) {
   showMessage("Status update failed. Check permissions and account status.");
  }
 }
+
+
 
 
 onAuthStateChanged(auth,async user=>{
