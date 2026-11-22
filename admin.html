@@ -79,6 +79,19 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <p>Admin access: Protected by Firestore Security Rules</p>
 <p class="muted">This is the initial management dashboard. Reports, audit logs and advanced settings are not yet connected.</p>
 </section>
+ 
+<section class="card">
+  <h2>Admin Activity Logs</h2>
+  <p class="muted">
+    Records of supplier licence verification and account decisions.
+  </p>
+  <div id="auditLogs">
+    <p>Loading activity logs...</p>
+  </div>
+  <button type="button" id="refreshAuditLogs">
+    Refresh Activity Logs
+  </button>
+</section>
 </main>
 
 <script type="module">
