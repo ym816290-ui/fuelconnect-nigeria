@@ -77,6 +77,12 @@
 
   <button type="button" id="signOutButton">Sign Out</button>
 </main>
+  <section class="card" id="incomingRequestsSection" hidden>
+  <h2>Incoming Purchase Requests</h2>
+  <div id="incomingRequests">
+    Loading purchase requests...
+  </div>
+</section>
 
 <script type="module">
 import { initializeApp } from
@@ -197,6 +203,51 @@ async function loadListings() {
       "Unable to load listings. Please try again.";
   }
 }
+  async function loadIncomingRequests() {
+  const requestsBox = document.getElementById("incomingRequests");
+
+  requestsBox.textContent = "Loading purchase requests...";
+
+  try {
+    const requestsQuery = query(
+      collection(db, "requests"),
+      where("supplierId", "==", currentUser.uid)
+    );
+
+    const snapshot = await getDocs(requestsQuery);
+    requestsBox.replaceChildren();
+
+    if (snapshot.empty) {
+      requestsBox.textContent = "No purchase requests received yet.";
+      return;
+    }
+
+    snapshot.forEach((requestDoc) => {
+      const item = requestDoc.data();
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = item.product + " Request";
+
+      const details = document.createElement("p");
+      details.textContent =
+        "Buyer: " + item.buyerName +
+        " | Quantity: " + item.quantity +
+        " | Delivery: " + item.deliveryLocation +
+        " | Message: " + (item.message || "None") +
+        " | Status: " + item.status;
+
+      card.append(title, details);
+      requestsBox.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Requests error:", error);
+    requestsBox.textContent =
+      "Unable to load purchase requests.";
+  }
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -250,6 +301,13 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     await loadListings();
+
+if (canPublish) {
+  document.getElementById("incomingRequestsSection").hidden = false;
+  await loadIncomingRequests();
+} else {
+  document.getElementById("incomingRequestsSection").hidden = true;
+}
 
   } catch (error) {
     console.error(error);
