@@ -84,9 +84,7 @@ const marketplaceMessage =
 const marketplaceListings =
   document.getElementById("marketplaceListings");
   async function loadMarketplace() {
-  marketplaceMessage.textContent =
-    "Loading verified suppliers...";
-
+  marketplaceMessage.textContent = "Loading available products...";
   marketplaceListings.replaceChildren();
 
   try {
@@ -103,36 +101,52 @@ const marketplaceListings =
       return;
     }
 
+    let totalListings = 0;
+
     for (const supplierDoc of suppliersSnapshot.docs) {
       const supplier = supplierDoc.data();
 
-      const card = document.createElement("div");
-      card.className = "card";
+      const listingsQuery = query(
+        collection(db, "listings"),
+        where("supplierId", "==", supplierDoc.id),
+        where("status", "==", "active")
+      );
 
-      const heading = document.createElement("h3");
-      heading.textContent = supplier.businessName || "Fuel Supplier";
+      const listingsSnapshot = await getDocs(listingsQuery);
 
-      const details = document.createElement("p");
-      details.textContent =
-        (supplier.location || "") + ", " +
-        (supplier.state || "");
+      listingsSnapshot.forEach((listingDoc) => {
+        const item = listingDoc.data();
 
-      const products = document.createElement("p");
-      products.textContent =
-        "Products: " + (supplier.products || []).join(", ");
+        const card = document.createElement("div");
+        card.className = "card";
 
-      card.append(heading, details, products);
+        const heading = document.createElement("h3");
+        heading.textContent = item.product || "Fuel Product";
 
-      marketplaceListings.appendChild(card);
+        const details = document.createElement("p");
+        const unit = item.product === "LPG" ? "kg" : "L";
+
+        details.textContent =
+          "Supplier: " + (supplier.businessName || "Verified Supplier") +
+          " | Quantity: " + item.quantityAvailable + " " + unit +
+          " | Price: ₦" + item.pricePerUnit + "/" + unit +
+          " | State: " + (item.state || supplier.state || "") +
+          " | Location: " + (item.location || supplier.location || "");
+
+        card.append(heading, details);
+        marketplaceListings.appendChild(card);
+        totalListings++;
+      });
     }
 
-    marketplaceMessage.textContent =
-      "Verified suppliers available.";
+    marketplaceMessage.textContent = totalListings > 0
+      ? totalListings + " available product listing(s) found."
+      : "No active product listings are currently available.";
 
   } catch (error) {
     console.error("Marketplace error:", error);
     marketplaceMessage.textContent =
-      "Unable to load suppliers. Please try again.";
+      "Unable to load products. Please try again.";
   }
 }
 onAuthStateChanged(auth, async (user) => {
