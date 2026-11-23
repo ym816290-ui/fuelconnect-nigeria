@@ -243,6 +243,26 @@ verify.addEventListener("click", async () => {
    adminUid: auth.currentUser.uid,
    createdAt: serverTimestamp()
   });
+    if (target.data.role === "supplier") {
+   const publicSupplierRef = doc(db, "publicSuppliers", userId);
+   const publicSupplierSnap = await getDoc(publicSupplierRef);
+
+   if (publicSupplierSnap.exists()) {
+    batch.update(publicSupplierRef, {
+     status: newStatus
+    });
+   } else if (newStatus === "active") {
+    batch.set(publicSupplierRef, {
+     supplierId: userId,
+     businessName: target.data.business || "",
+     state: target.data.state || "",
+     location: target.data.location || "",
+     products: target.data.products || [],
+     status: "active",
+     createdAt: serverTimestamp()
+    });
+   }
+  }
 
   await batch.commit();
 
