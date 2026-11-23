@@ -31,7 +31,28 @@
     <h2>Fuel Marketplace</h2>
     <p>Browse verified fuel suppliers and available products.</p>
     <div id="marketplaceMessage">Loading available suppliers...</div>
-    <div id="marketplaceListings"></div>
+
+<section class="card" id="purchaseRequestSection" hidden>
+  <h2>Request This Product</h2>
+  <p id="selectedProductInfo"></p>
+
+  <form id="purchaseRequestForm">
+    <label for="requestQuantity">Quantity Required</label>
+    <input id="requestQuantity" type="number" min="0.01" step="any" required>
+
+    <label for="requestDeliveryLocation">Delivery Location</label>
+    <input id="requestDeliveryLocation" required placeholder="Enter delivery address">
+
+    <label for="requestMessage">Additional Message</label>
+    <textarea id="requestMessage" placeholder="Optional message"></textarea>
+
+    <button type="submit" id="sendRequestButton">Send Purchase Request</button>
+  </form>
+
+  <p id="purchaseRequestMessage" role="status"></p>
+</section>
+
+<div id="marketplaceListings"></div>
   </section>
 
   <button type="button" id="signOutButton">Sign Out</button>
@@ -54,7 +75,9 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  addDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
