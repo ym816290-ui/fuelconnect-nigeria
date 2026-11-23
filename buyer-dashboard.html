@@ -27,6 +27,12 @@
     <h2>Account Status</h2>
     <p id="accountStatus">Checking account status...</p>
   </section>
+    <section class="card" id="marketplaceSection" hidden>
+    <h2>Fuel Marketplace</h2>
+    <p>Browse verified fuel suppliers and available products.</p>
+    <div id="marketplaceMessage">Loading available suppliers...</div>
+    <div id="marketplaceListings"></div>
+  </section>
 
   <button type="button" id="signOutButton">Sign Out</button>
   <p id="dashboardMessage" role="status"></p>
@@ -44,7 +50,11 @@ import {
 import {
   getFirestore,
   doc,
-  getDoc
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -65,7 +75,66 @@ const welcome = document.getElementById("welcome");
 const accountDetails = document.getElementById("accountDetails");
 const accountStatus = document.getElementById("accountStatus");
 const dashboardMessage = document.getElementById("dashboardMessage");
+const marketplaceSection =
+  document.getElementById("marketplaceSection");
 
+const marketplaceMessage =
+  document.getElementById("marketplaceMessage");
+
+const marketplaceListings =
+  document.getElementById("marketplaceListings");
+  async function loadMarketplace() {
+  marketplaceMessage.textContent =
+    "Loading verified suppliers...";
+
+  marketplaceListings.replaceChildren();
+
+  try {
+    const suppliersQuery = query(
+      collection(db, "publicSuppliers"),
+      where("status", "==", "active")
+    );
+
+    const suppliersSnapshot = await getDocs(suppliersQuery);
+
+    if (suppliersSnapshot.empty) {
+      marketplaceMessage.textContent =
+        "No verified suppliers are currently available.";
+      return;
+    }
+
+    for (const supplierDoc of suppliersSnapshot.docs) {
+      const supplier = supplierDoc.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const heading = document.createElement("h3");
+      heading.textContent = supplier.businessName || "Fuel Supplier";
+
+      const details = document.createElement("p");
+      details.textContent =
+        (supplier.location || "") + ", " +
+        (supplier.state || "");
+
+      const products = document.createElement("p");
+      products.textContent =
+        "Products: " + (supplier.products || []).join(", ");
+
+      card.append(heading, details, products);
+
+      marketplaceListings.appendChild(card);
+    }
+
+    marketplaceMessage.textContent =
+      "Verified suppliers available.";
+
+  } catch (error) {
+    console.error("Marketplace error:", error);
+    marketplaceMessage.textContent =
+      "Unable to load suppliers. Please try again.";
+  }
+}
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.replace("login.html");
@@ -114,15 +183,22 @@ onAuthStateChanged(auth, async (user) => {
       "Your account status: " + (data.status || "Unknown");
 
     if (data.status === "pending") {
-      dashboardMessage.textContent =
-        "Your account is awaiting Admin approval.";
-    } else if (data.status === "active") {
-      dashboardMessage.textContent =
-        "Your Buyer account is active.";
-    } else {
-      dashboardMessage.textContent =
-        "Your account is not currently active. Please contact support.";
-    }
+  dashboardMessage.textContent =
+    "Your account is awaiting Admin approval.";
+  marketplaceSection.hidden = true;
+
+} else if (data.status === "active") {
+  dashboardMessage.textContent =
+    "Your Buyer account is active.";
+
+  marketplaceSection.hidden = false;
+  loadMarketplace();
+
+} else {
+  dashboardMessage.textContent =
+    "Your account is not currently active. Please contact support.";
+  marketplaceSection.hidden = true;
+}
 
   } catch (error) {
     console.error(error);
