@@ -83,6 +83,72 @@ const marketplaceMessage =
 
 const marketplaceListings =
   document.getElementById("marketplaceListings");
+  let buyerNameForRequest = "";
+let selectedProductForRequest = null;
+  document.getElementById("purchaseRequestForm")
+  .addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    if (!selectedProductForRequest) {
+      return;
+    }
+
+    const quantity = Number(
+      document.getElementById("requestQuantity").value
+    );
+
+    const deliveryLocation =
+      document.getElementById("requestDeliveryLocation").value.trim();
+
+    const message =
+      document.getElementById("requestMessage").value.trim();
+
+    const statusMessage =
+      document.getElementById("purchaseRequestMessage");
+
+    const sendButton =
+      document.getElementById("sendRequestButton");
+
+    if (!Number.isFinite(quantity) || quantity <= 0 || !deliveryLocation) {
+      statusMessage.textContent =
+        "Please enter a valid quantity and delivery location.";
+      return;
+    }
+
+    sendButton.disabled = true;
+    statusMessage.textContent = "Sending your request...";
+
+    try {
+      await addDoc(collection(db, "requests"), {
+        buyerId: auth.currentUser.uid,
+        buyerName: buyerNameForRequest,
+        supplierId: selectedProductForRequest.supplierId,
+        product: selectedProductForRequest.product,
+        quantity: quantity,
+        deliveryLocation: deliveryLocation,
+        message: message,
+        status: "open",
+        createdAt: serverTimestamp()
+      });
+
+      statusMessage.textContent =
+        "Your purchase request has been sent successfully.";
+
+      document.getElementById("purchaseRequestForm").reset();
+      document.getElementById("purchaseRequestSection").hidden = true;
+
+      selectedProductForRequest = null;
+
+    } catch (error) {
+      console.error("Purchase request error:", error);
+
+      statusMessage.textContent =
+        "Unable to send request. Please try again.";
+    }
+
+    sendButton.disabled = false;
+  });
   async function loadMarketplace() {
   marketplaceMessage.textContent = "Loading available products...";
   marketplaceListings.replaceChildren();
@@ -133,15 +199,41 @@ const marketplaceListings =
           " | State: " + (item.state || supplier.state || "") +
           " | Location: " + (item.location || supplier.location || "");
 
-        card.append(heading, details);
-        marketplaceListings.appendChild(card);
+        const requestButton = document.createElement("button");
+requestButton.textContent = "Request This Product";
+
+const allowedProducts = ["PMS", "AGO", "DPK", "ATK"];
+
+if (!allowedProducts.includes(item.product)) {
+  requestButton.disabled = true;
+  requestButton.textContent = "Request unavailable";
+}
+
+requestButton.addEventListener("click", () => {
+  selectedProductForRequest = {
+    supplierId: supplierDoc.id,
+    product: item.product
+  };
+
+  document.getElementById("selectedProductInfo").textContent =
+    "Product: " + item.product +
+    " | Supplier: " + (supplier.businessName || "Verified Supplier");
+
+  document.getElementById("purchaseRequestSection").hidden = false;
+  document.getElementById("purchaseRequestSection")
+    .scrollIntoView({ behavior: "smooth" });
+});
+
+card.append(heading, details, requestButton);
+marketplaceListings.appendChild(card);
         totalListings++;
       });
     }
 
-    marketplaceMessage.textContent = totalListings > 0
-      ? totalListings + " available product listing(s) found."
-      : "No active product listings are currently available.";
+    marketplaceMessage.textContent =
+      totalListings > 0
+        ? totalListings + " available product listing(s) found."
+        : "No active product listings are currently available.";
 
   } catch (error) {
     console.error("Marketplace error:", error);
@@ -166,6 +258,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const data = userSnap.data();
+    buyerNameForRequest = data.fullname || "Buyer";
 
     if (data.role !== "buyer") {
       await signOut(auth);
