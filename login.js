@@ -60,9 +60,10 @@ if (loginForm && loginMessage) {
       const userData = userSnap.data();
 
       if (
-        userData.status !== "active" ||
-        userData.role !== selectedRole
-      ) {
+  userData.role !== selectedRole ||
+  !["active", "pending"].includes(userData.status) ||
+  (selectedRole === "buyer" && userData.status !== "active")
+) {
         await signOut(auth);
         loginMessage.textContent =
           "Account type or account status is not valid. Please contact support.";
