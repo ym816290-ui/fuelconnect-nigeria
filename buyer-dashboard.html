@@ -380,6 +380,7 @@ onAuthStateChanged(auth, async (user) => {
 
   marketplaceSection.hidden = false;
   loadMarketplace();
+      await loadBuyerQuotations();
 
 } else {
   dashboardMessage.textContent =
