@@ -180,6 +180,55 @@ let selectedProductForRequest = null;
 
     sendButton.disabled = false;
   });
+  
+async function loadBuyerQuotations() {
+  const quotationsBox = document.getElementById("buyerQuotations");
+  quotationsBox.textContent = "Loading supplier quotations...";
+
+  try {
+    const quotationsQuery = query(
+      collection(db, "quotations"),
+      where("buyerId", "==", auth.currentUser.uid)
+    );
+
+    const snapshot = await getDocs(quotationsQuery);
+    quotationsBox.replaceChildren();
+
+    if (snapshot.empty) {
+      quotationsBox.textContent = "No supplier quotations received yet.";
+      return;
+    }
+
+    for (const quotationDoc of snapshot.docs) {
+      const item = quotationDoc.data();
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = "Supplier Quotation";
+
+      const price = document.createElement("p");
+      price.textContent =
+        "Price: ₦" + item.pricePerUnit + " per unit";
+
+      const message = document.createElement("p");
+      message.textContent =
+        "Message: " + (item.message || "No additional message");
+
+      const supplier = document.createElement("p");
+      supplier.textContent = "Supplier ID: " + item.supplierId;
+
+      card.append(title, price, message, supplier);
+      quotationsBox.appendChild(card);
+    }
+
+  } catch (error) {
+    console.error("Quotation loading error:", error);
+    quotationsBox.textContent =
+      "Unable to load supplier quotations.";
+  }
+}
+
   async function loadMarketplace() {
   marketplaceMessage.textContent = "Loading available products...";
   marketplaceListings.replaceChildren();
