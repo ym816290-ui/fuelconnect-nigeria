@@ -230,11 +230,88 @@ async function loadBuyerQuotations() {
       message.textContent =
         "Message: " + (item.message || "No additional message");
 
-      const supplier = document.createElement("p");
-      supplier.textContent = "Supplier ID: " + item.supplierId;
+      
+const supplier = document.createElement("p");
+supplier.textContent = "Supplier ID: " + item.supplierId;
 
-      card.append(title, price, message, supplier);
-      quotationsBox.appendChild(card);
+const responseMessage = document.createElement("textarea");
+responseMessage.placeholder = "Optional message to supplier";
+
+const feedback = document.createElement("p");
+feedback.setAttribute("role", "status");
+
+const acceptButton = document.createElement("button");
+acceptButton.type = "button";
+acceptButton.textContent = "Accept Quotation";
+
+const declineButton = document.createElement("button");
+declineButton.type = "button";
+declineButton.textContent = "Decline Quotation";
+
+const questionButton = document.createElement("button");
+questionButton.type = "button";
+questionButton.textContent = "Ask a Question";
+
+async function sendQuotationResponse(responseType) {
+  const buttons = [acceptButton, declineButton, questionButton];
+
+  buttons.forEach(button => button.disabled = true);
+  feedback.textContent = "Sending response...";
+
+  try {
+    await setDoc(
+      doc(db, "quotationResponses", quotationDoc.id),
+      {
+        buyerId: auth.currentUser.uid,
+        supplierId: item.supplierId,
+        response: responseType,
+        message: responseMessage.value.trim(),
+        createdAt: serverTimestamp()
+      }
+    );
+
+    feedback.textContent = "Your response was sent successfully.";
+
+  } catch (error) {
+    console.error("Quotation response error:", error);
+    feedback.textContent =
+      "Unable to send response. Please try again.";
+
+    buttons.forEach(button => button.disabled = false);
+  }
+}
+
+acceptButton.addEventListener("click", () =>
+  sendQuotationResponse("accepted")
+);
+
+declineButton.addEventListener("click", () =>
+  sendQuotationResponse("declined")
+);
+
+questionButton.addEventListener("click", () => {
+  if (!responseMessage.value.trim()) {
+    feedback.textContent = "Please enter your question first.";
+    return;
+  }
+
+  sendQuotationResponse("question");
+});
+
+card.append(
+  title,
+  price,
+  message,
+  supplier,
+  responseMessage,
+  acceptButton,
+  declineButton,
+  questionButton,
+  feedback
+);
+
+quotationsBox.appendChild(card);
+
     }
 
   } catch (error) {
