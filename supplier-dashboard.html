@@ -324,6 +324,51 @@ async function loadIncomingRequests() {
       "Unable to load purchase requests.";
   }
 }
+  
+async function loadBuyerQuotationResponses() {
+  const responsesBox = document.getElementById("quotationResponses");
+  responsesBox.textContent = "Loading buyer responses...";
+
+  try {
+    const responsesQuery = query(
+      collection(db, "quotationResponses"),
+      where("supplierId", "==", currentUser.uid)
+    );
+
+    const snapshot = await getDocs(responsesQuery);
+    responsesBox.replaceChildren();
+
+    if (snapshot.empty) {
+      responsesBox.textContent = "No buyer responses received yet.";
+      return;
+    }
+
+    snapshot.forEach((responseDoc) => {
+      const item = responseDoc.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = "Quotation Response: " + item.response;
+
+      const buyer = document.createElement("p");
+      buyer.textContent = "Buyer ID: " + item.buyerId;
+
+      const message = document.createElement("p");
+      message.textContent =
+        "Message: " + (item.message || "No additional message");
+
+      card.append(title, buyer, message);
+      responsesBox.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Buyer responses error:", error);
+    responsesBox.textContent = "Unable to load buyer responses.";
+  }
+}
+
 
 
 onAuthStateChanged(auth, async (user) => {
@@ -382,8 +427,13 @@ onAuthStateChanged(auth, async (user) => {
 if (canPublish) {
   document.getElementById("incomingRequestsSection").hidden = false;
   await loadIncomingRequests();
+
+  document.getElementById("quotationResponsesSection").hidden = false;
+  await loadBuyerQuotationResponses();
+
 } else {
   document.getElementById("incomingRequestsSection").hidden = true;
+  document.getElementById("quotationResponsesSection").hidden = true;
 }
 
 
