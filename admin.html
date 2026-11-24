@@ -466,7 +466,7 @@ if (data.role === "supplier") {
     batch.update(publicRef, { status: newStatus });
   }
 }
- Publish verified suppliers to the buyer directory.
+ // Publish verified suppliers to the buyer directory.
     if (data.role === "supplier" && newStatus === "active") {
       const publicRef = doc(db, "publicSuppliers", userId);
       const publicSnap = await getDoc(publicRef);
