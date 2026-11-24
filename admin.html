@@ -387,65 +387,102 @@ async function loadAuditLogs() {
 
 
 
+
 async function changeStatus(userId, newStatus) {
- const action = newStatus === "active"
-  ? "approve"
-  : newStatus === "rejected"
-  ? "reject"
-  : "suspend";
-
- if (!confirm("Are you sure you want to " + action + " this account?")) {
-  return;
- }
-
- try {
-  const target = allUsers.find(user => user.id === userId);
-
-  if (!target) {
-   throw new Error("Account not found.");
-  }
-
-  if (
-   target.data.role === "supplier" &&
-   newStatus === "active" &&
-   target.data.licenceVerification !== "verified"
-  ) {
-   showMessage("Supplier licence must be verified first.");
-   return;
-  }
-
-  const batch = writeBatch(db);
-  const userRef = doc(db, "users", userId);
-  const logRef = doc(collection(db, "auditLogs"));
-
-  batch.update(userRef, {
-   status: newStatus,
-   statusUpdatedBy: auth.currentUser.uid,
-   statusUpdatedAt: serverTimestamp()
-  });
-
-  batch.set(logRef, {
-   action: newStatus === "active"
-    ? "account_approved"
+  const action = newStatus === "active"
+    ? "approve"
     : newStatus === "rejected"
-    ? "account_rejected"
-    : "account_suspended",
-   targetUserId: userId,
-   targetEmail: target.data.email || "",
-   adminUid: auth.currentUser.uid,
-   createdAt: serverTimestamp()
-  });
+    ? "reject"
+    : "suspend";
 
-  await batch.commit();
+  if (!["active", "rejected", "suspended"].includes(newStatus)) {
+    showMessage("Invalid account status.");
+    return;
+  }
 
-  showMessage("Account status updated successfully.");
-  await loadUsers();
+  if (!confirm("Are you sure you want to " + action + " this account?")) {
+    return;
+  }
 
- } catch(error) {
-  console.error(error);
-  showMessage("Status update failed. Check permissions and account status.");
- }
+  try {
+    const target = allUsers.find(user => user.id === userId);
+
+    if (!target) {
+      throw new Error("Account not found.");
+    }
+
+    const data = target.data;
+
+    if (
+      data.role === "supplier" &&
+      newStatus === "active" &&
+      data.licenceVerification !== "verified"
+    ) {
+      showMessage("Supplier licence must be verified first.");
+      return;
+    }
+
+    if (!auth.currentUser || !currentAdmin) {
+      throw new Error("Administrator session is not valid.");
+    }
+
+    const batch = writeBatch(db);
+    const userRef = doc(db, "users", userId);
+    const logRef = doc(collection(db, "auditLogs"));
+
+    batch.update(userRef, {
+      status: newStatus,
+      statusUpdatedBy: auth.currentUser.uid,
+      statusUpdatedAt: serverTimestamp()
+    });
+
+    // Publish verified suppliers to the buyer directory.
+    if (data.role === "supplier" && newStatus === "active") {
+      const publicRef = doc(db, "publicSuppliers", userId);
+      const publicSnap = await getDoc(publicRef);
+
+      if (publicSnap.exists()) {
+        batch.update(publicRef, {
+          status: "active"
+        });
+      } else {
+        batch.set(publicRef, {
+          supplierId: userId,
+          businessName: data.business,
+          state: data.state,
+          location: data.location,
+          products: data.products,
+          status: "active",
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+
+    batch.set(logRef, {
+      action: newStatus === "active"
+        ? "account_approved"
+        : newStatus === "rejected"
+        ? "account_rejected"
+        : "account_suspended",
+      targetUserId: userId,
+      targetEmail: data.email || "",
+      adminUid: auth.currentUser.uid,
+      createdAt: serverTimestamp()
+    });
+
+    await batch.commit();
+
+    showMessage("Account status updated successfully.");
+    await loadUsers();
+
+  } catch (error) {
+    console.error("Account status update error:", error);
+    showMessage(
+      "Status update failed. Check Firestore permissions and account data."
+    );
+  }
 }
+
 
 
 
