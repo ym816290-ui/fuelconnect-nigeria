@@ -436,7 +436,37 @@ async function changeStatus(userId, newStatus) {
       statusUpdatedAt: serverTimestamp()
     });
 
-    // Publish verified suppliers to the buyer directory.
+    //
+if (data.role === "supplier") {
+  const publicRef = doc(db, "publicSuppliers", userId);
+  const publicSnap = await getDoc(publicRef);
+
+  if (newStatus === "active") {
+    if (data.licenceVerification !== "verified") {
+      showMessage("Supplier licence must be verified first.");
+      return;
+    }
+
+    const publicData = {
+      supplierId: userId,
+      businessName: data.business,
+      state: data.state,
+      location: data.location,
+      products: data.products,
+      status: "active",
+      createdAt: serverTimestamp()
+    };
+
+    if (publicSnap.exists()) {
+      batch.update(publicRef, { status: "active" });
+    } else {
+      batch.set(publicRef, publicData);
+    }
+  } else if (publicSnap.exists()) {
+    batch.update(publicRef, { status: newStatus });
+  }
+}
+ Publish verified suppliers to the buyer directory.
     if (data.role === "supplier" && newStatus === "active") {
       const publicRef = doc(db, "publicSuppliers", userId);
       const publicSnap = await getDoc(publicRef);
