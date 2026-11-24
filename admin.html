@@ -81,6 +81,17 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </section>
  
 <section class="card">
+ 
+<section class="card" id="quotationMonitoringSection">
+  <h2>Quotation Monitoring</h2>
+
+  <p>Total Quotations: <strong id="totalQuotations">0</strong></p>
+  <p>Buyer Responses: <strong id="totalQuotationResponses">0</strong></p>
+  <p>Accepted: <strong id="acceptedQuotations">0</strong></p>
+  <p>Declined: <strong id="declinedQuotations">0</strong></p>
+  <p>Questions: <strong id="quotationQuestions">0</strong></p>
+</section>
+
   <h2>Admin Activity Logs</h2>
   <p class="muted">
     Records of supplier licence verification and account decisions.
@@ -512,6 +523,50 @@ if (data.role === "supplier") {
     );
   }
 }
+ 
+async function loadQuotationMonitoring() {
+  try {
+    const quotationsSnapshot = await getDocs(
+      collection(db, "quotations")
+    );
+
+    const responsesSnapshot = await getDocs(
+      collection(db, "quotationResponses")
+    );
+
+    let accepted = 0;
+    let declined = 0;
+    let questions = 0;
+
+    responsesSnapshot.forEach((responseDoc) => {
+      const response = responseDoc.data().response;
+
+      if (response === "accepted") accepted++;
+      if (response === "declined") declined++;
+      if (response === "question") questions++;
+    });
+
+    document.getElementById("totalQuotations").textContent =
+      quotationsSnapshot.size;
+
+    document.getElementById("totalQuotationResponses").textContent =
+      responsesSnapshot.size;
+
+    document.getElementById("acceptedQuotations").textContent =
+      accepted;
+
+    document.getElementById("declinedQuotations").textContent =
+      declined;
+
+    document.getElementById("quotationQuestions").textContent =
+      questions;
+
+  } catch (error) {
+    console.error("Quotation monitoring error:", error);
+    showMessage("Unable to load quotation monitoring.");
+  }
+}
+
 
 
 
@@ -535,6 +590,7 @@ onAuthStateChanged(auth,async user=>{
   currentAdmin=user;
   showMessage("Administrator access verified.");
   await loadUsers();
+  await loadQuotationMonitoring();
  } catch(error) {
   console.error(error);
   showMessage("Unable to verify administrator access.");
