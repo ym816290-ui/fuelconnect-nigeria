@@ -309,6 +309,13 @@ if (canPublish) {
   document.getElementById("incomingRequestsSection").hidden = true;
 }
 
+if (canPublish) {
+  document.getElementById("incomingRequestsSection").hidden = false;
+  await loadIncomingRequests();
+} else {
+  document.getElementById("incomingRequestsSection").hidden = true;
+}
+
   } catch (error) {
     console.error(error);
     dashboardMessage.textContent =
