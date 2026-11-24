@@ -181,6 +181,7 @@ let selectedProductForRequest = null;
     sendButton.disabled = false;
   });
   
+
 async function loadBuyerQuotations() {
   const quotationsBox = document.getElementById("buyerQuotations");
   quotationsBox.textContent = "Loading supplier quotations...";
@@ -201,11 +202,24 @@ async function loadBuyerQuotations() {
 
     for (const quotationDoc of snapshot.docs) {
       const item = quotationDoc.data();
+
+      let productName = "Fuel product";
+
+      if (item.requestId) {
+        const requestRef = doc(db, "requests", item.requestId);
+        const requestSnapshot = await getDoc(requestRef);
+
+        if (requestSnapshot.exists()) {
+          productName =
+            requestSnapshot.data().product || "Fuel product";
+        }
+      }
+
       const card = document.createElement("div");
       card.className = "card";
 
       const title = document.createElement("h3");
-      title.textContent = "Supplier Quotation";
+      title.textContent = productName + " Quotation";
 
       const price = document.createElement("p");
       price.textContent =
@@ -228,6 +242,7 @@ async function loadBuyerQuotations() {
       "Unable to load supplier quotations.";
   }
 }
+
 
   async function loadMarketplace() {
   marketplaceMessage.textContent = "Loading available products...";
