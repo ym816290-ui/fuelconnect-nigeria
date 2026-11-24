@@ -203,9 +203,9 @@ async function loadListings() {
       "Unable to load listings. Please try again.";
   }
 }
-  async function loadIncomingRequests() {
+  
+async function loadIncomingRequests() {
   const requestsBox = document.getElementById("incomingRequests");
-
   requestsBox.textContent = "Loading purchase requests...";
 
   try {
@@ -238,7 +238,75 @@ async function loadListings() {
         " | Message: " + (item.message || "None") +
         " | Status: " + item.status;
 
-      card.append(title, details);
+      const quoteForm = document.createElement("form");
+
+      const priceLabel = document.createElement("label");
+      priceLabel.textContent = "Your Price Per Unit (NGN)";
+
+      const priceInput = document.createElement("input");
+      priceInput.type = "number";
+      priceInput.min = "0.01";
+      priceInput.step = "any";
+      priceInput.required = true;
+
+      const messageLabel = document.createElement("label");
+      messageLabel.textContent = "Quotation Message";
+
+      const messageInput = document.createElement("textarea");
+      messageInput.placeholder = "Enter quotation details";
+
+      const sendButton = document.createElement("button");
+      sendButton.type = "submit";
+      sendButton.textContent = "Send Quotation";
+
+      const feedback = document.createElement("p");
+      feedback.setAttribute("role", "status");
+
+      quoteForm.append(
+        priceLabel,
+        priceInput,
+        messageLabel,
+        messageInput,
+        sendButton,
+        feedback
+      );
+
+      quoteForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const pricePerUnit = Number(priceInput.value);
+
+        if (!Number.isFinite(pricePerUnit) || pricePerUnit <= 0) {
+          feedback.textContent = "Enter a valid price.";
+          return;
+        }
+
+        sendButton.disabled = true;
+        feedback.textContent = "Sending quotation...";
+
+        try {
+          await addDoc(collection(db, "quotations"), {
+            requestId: requestDoc.id,
+            buyerId: item.buyerId,
+            supplierId: currentUser.uid,
+            pricePerUnit: pricePerUnit,
+            currency: "NGN",
+            message: messageInput.value.trim(),
+            createdAt: serverTimestamp()
+          });
+
+          feedback.textContent = "Quotation sent successfully.";
+          sendButton.textContent = "Quotation Sent";
+
+        } catch (error) {
+          console.error("Quotation error:", error);
+          feedback.textContent =
+            "Unable to send quotation. Please try again.";
+          sendButton.disabled = false;
+        }
+      });
+
+      card.append(title, details, quoteForm);
       requestsBox.appendChild(card);
     });
 
@@ -248,6 +316,7 @@ async function loadListings() {
       "Unable to load purchase requests.";
   }
 }
+
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
