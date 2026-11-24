@@ -597,7 +597,10 @@ onAuthStateChanged(auth,async user=>{
  }
 });
 
-document.getElementById("refreshButton").addEventListener("click",loadUsers);
+document.getElementById("refreshButton").addEventListener("click", async () => {
+  await loadUsers();
+  await loadQuotationMonitoring();
+});
 document.getElementById("searchInput").addEventListener("input",renderUsers);
 document.getElementById("roleFilter").addEventListener("change",renderUsers);
 document.getElementById("statusFilter").addEventListener("change",renderUsers);
