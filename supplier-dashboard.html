@@ -458,16 +458,27 @@ listingForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  const product = productInput.value;
-  const quantity = Number(document.getElementById("quantity").value);
-  const price = Number(document.getElementById("price").value);
-  const state = document.getElementById("state").value.trim();
-  const location = document.getElementById("location").value.trim();
+  const product = productInput.value.trim().toUpperCase();
+const quantity = Number(document.getElementById("quantity").value);
+const price = Number(document.getElementById("price").value);
+const state = document.getElementById("state").value.trim();
+const location = document.getElementById("location").value.trim();
 
-  if (!product || quantity <= 0 || price <= 0 || !state || !location) {
-    listingMessage.textContent = "Please complete all fields correctly.";
-    return;
-  }
+const allowedProducts = ["PMS", "AGO", "DPK", "ATK", "LPG"];
+
+if (
+  !allowedProducts.includes(product) ||
+  !Number.isFinite(quantity) ||
+  quantity <= 0 ||
+  !Number.isFinite(price) ||
+  price <= 0 ||
+  !state ||
+  !location
+) {
+  listingMessage.textContent =
+    "Please enter a valid product, quantity, price, state and location.";
+  return;
+}
 
   const publishButton = document.getElementById("publishButton");
   publishButton.disabled = true;
