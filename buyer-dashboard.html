@@ -142,11 +142,16 @@ let selectedProductForRequest = null;
     const sendButton =
       document.getElementById("sendRequestButton");
 
-    if (!Number.isFinite(quantity) || quantity <= 0 || !deliveryLocation) {
-      statusMessage.textContent =
-        "Please enter a valid quantity and delivery location.";
-      return;
-    }
+    if (
+  !Number.isFinite(quantity) ||
+  quantity <= 0 ||
+  quantity > selectedProductForRequest.quantityAvailable ||
+  !deliveryLocation
+) {
+  statusMessage.textContent =
+    "Please enter a valid quantity within the supplier's available stock and a delivery location.";
+  return;
+}
 
     sendButton.disabled = true;
     statusMessage.textContent = "Sending your request...";
