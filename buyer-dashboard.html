@@ -94,6 +94,7 @@ import {
   getDocs,
   addDoc,
   setDoc,
+  updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
@@ -517,6 +518,15 @@ onAuthStateChanged(auth, async (user) => {
       paragraph.textContent = label + ": " + (value || "Not provided");
       accountDetails.appendChild(paragraph);
     });
+    const editButton = document.createElement("button");
+editButton.textContent = "Edit Profile";
+editButton.type = "button";
+
+editButton.onclick = () => {
+  editBuyerProfile(data);
+};
+
+accountDetails.appendChild(editButton);
 
     accountStatus.textContent =
       "Your account status: " + (data.status || "Unknown");
@@ -547,6 +557,47 @@ await loadBuyerQuotations();
       "Unable to load account details. Please try again.";
   }
 });
+  async function editBuyerProfile(data) {
+  const fullname = prompt("Enter Full Name:", data.fullname || "");
+  if (fullname === null) return;
+
+  const phone = prompt("Enter Phone Number:", data.phone || "");
+  if (phone === null) return;
+
+  const state = prompt("Enter State:", data.state || "");
+  if (state === null) return;
+
+  const location = prompt(
+    "Enter Location:",
+    data.location || ""
+  );
+  if (location === null) return;
+
+  if (
+    !fullname.trim() ||
+    !phone.trim() ||
+    !state.trim() ||
+    !location.trim()
+  ) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      fullname: fullname.trim(),
+      phone: phone.trim(),
+      state: state.trim(),
+      location: location.trim()
+    });
+
+    alert("Buyer profile updated successfully.");
+    window.location.reload();
+  } catch (error) {
+    console.error(error);
+    alert("Unable to update profile. Please try again.");
+  }
+}
 
 document.getElementById("signOutButton").addEventListener("click", async () => {
   try {
