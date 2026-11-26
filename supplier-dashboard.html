@@ -107,7 +107,8 @@ import {
   doc,
   getDoc,
   collection,
-  addDoc,
+    addDoc,
+  updateDoc,
   getDocs,
   query,
   where,
@@ -206,10 +207,24 @@ async function loadListings() {
 const editButton = document.createElement("button");
 editButton.textContent = "Edit Listing";
 editButton.type = "button";
+      editButton.onclick = () => {
+  editListing(listingDoc.id, item);
+};
 
 const unavailableButton = document.createElement("button");
 unavailableButton.textContent = "Mark as Unavailable";
 unavailableButton.type = "button";
+      unavailableButton.onclick = async () => {
+  const confirmAction = confirm(
+    "Are you sure you want to mark this listing as unavailable?"
+  );
+
+  if (confirmAction) {
+    await updateListing(listingDoc.id, {
+      status: "inactive"
+    });
+  }
+};
 
 card.append(editButton, unavailableButton);
 myListings.appendChild(card);
@@ -220,6 +235,56 @@ myListings.appendChild(card);
     myListings.textContent =
       "Unable to load listings. Please try again.";
   }
+}
+  async function updateListing(listingId, updates) {
+  try {
+    await updateDoc(doc(db, "listings", listingId), updates);
+    alert("Listing updated successfully.");
+    await loadListings();
+  } catch (error) {
+    console.error(error);
+    alert("Unable to update listing.");
+  }
+}
+  async function editListing(listingId, item) {
+  const newQuantity = prompt(
+    "Enter new available quantity:",
+    item.quantityAvailable
+  );
+
+  if (newQuantity === null) return;
+
+  const newPrice = prompt(
+    "Enter new price per unit:",
+    item.pricePerUnit
+  );
+
+  if (newPrice === null) return;
+
+  const newLocation = prompt(
+    "Enter new location:",
+    item.location
+  );
+
+  if (newLocation === null) return;
+
+  const quantity = Number(newQuantity);
+  const price = Number(newPrice);
+
+  if (
+    !Number.isFinite(quantity) || quantity <= 0 ||
+    !Number.isFinite(price) || price <= 0 ||
+    !newLocation.trim()
+  ) {
+    alert("Please enter valid quantity, price and location.");
+    return;
+  }
+
+  await updateListing(listingId, {
+    quantityAvailable: quantity,
+    pricePerUnit: price,
+    location: newLocation.trim()
+  });
 }
   
 async function loadIncomingRequests() {
