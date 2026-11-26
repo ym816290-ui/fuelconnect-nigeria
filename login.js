@@ -4,7 +4,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebas
 import {
   getAuth,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
 import {
@@ -95,6 +96,35 @@ if (loginForm && loginMessage) {
         loginMessage.textContent =
           error.message || "Unable to sign in. Please try again.";
       }
+    }
+  });
+}
+const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+
+if (forgotPasswordLink) {
+  forgotPasswordLink.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+      loginMessage.textContent =
+        "Please enter your email address first.";
+      return;
+    }
+
+    loginMessage.textContent = "Sending password reset email...";
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+
+      loginMessage.textContent =
+        "If an account exists with this email, a password reset link will be sent. Please check your inbox.";
+    } catch (error) {
+      console.error("Password reset error:", error);
+
+      loginMessage.textContent =
+        "Unable to send reset email. Please check your email address and try again.";
     }
   });
 }
