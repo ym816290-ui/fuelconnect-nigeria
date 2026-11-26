@@ -195,6 +195,51 @@ product: selectedProductForRequest.product,
 
     sendButton.disabled = false;
   });
+  async function loadMyPurchaseRequests() {
+  const requestsBox = document.getElementById("myPurchaseRequests");
+
+  requestsBox.textContent = "Loading your purchase requests...";
+
+  try {
+    const requestsQuery = query(
+      collection(db, "requests"),
+      where("buyerId", "==", auth.currentUser.uid)
+    );
+
+    const snapshot = await getDocs(requestsQuery);
+    requestsBox.replaceChildren();
+
+    if (snapshot.empty) {
+      requestsBox.textContent =
+        "You have not sent any purchase requests yet.";
+      return;
+    }
+
+    snapshot.forEach((requestDoc) => {
+      const item = requestDoc.data();
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = item.product || "Fuel Request";
+
+      const quantity = document.createElement("p");
+      quantity.textContent = "Quantity: " + item.quantity;
+
+      const location = document.createElement("p");
+      location.textContent = "Delivery Location: " + item.deliveryLocation;
+
+      const status = document.createElement("p");
+      status.textContent = "Status: " + item.status;
+
+      card.append(title, quantity, location, status);
+      requestsBox.appendChild(card);
+    });
+  } catch (error) {
+    console.error("Purchase requests error:", error);
+    requestsBox.textContent = "Unable to load your purchase requests.";
+  }
+}
   
 
 async function loadBuyerQuotations() {
@@ -486,8 +531,9 @@ onAuthStateChanged(auth, async (user) => {
     "Your Buyer account is active.";
 
   marketplaceSection.hidden = false;
-  loadMarketplace();
-      await loadBuyerQuotations();
+loadMarketplace();
+await loadMyPurchaseRequests();
+await loadBuyerQuotations();
 
 } else {
   dashboardMessage.textContent =
