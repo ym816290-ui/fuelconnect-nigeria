@@ -178,6 +178,51 @@ editButton.onclick = () => {
 
 accountDetails.appendChild(editButton);
 }
+  async function editSupplierProfile(data) {
+  const business = prompt("Enter Business Name:", data.business || "");
+  if (business === null) return;
+
+  const phone = prompt("Enter Phone Number:", data.phone || "");
+  if (phone === null) return;
+
+  const state = prompt("Enter State:", data.state || "");
+  if (state === null) return;
+
+  const location = prompt(
+    "Enter Business Location:",
+    data.location || ""
+  );
+  if (location === null) return;
+
+  if (!business.trim() || !phone.trim() ||
+      !state.trim() || !location.trim()) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      business: business.trim(),
+      phone: phone.trim(),
+      state: state.trim(),
+      location: location.trim()
+    });
+
+    supplierData = {
+      ...supplierData,
+      business: business.trim(),
+      phone: phone.trim(),
+      state: state.trim(),
+      location: location.trim()
+    };
+
+    showProfile(supplierData);
+    alert("Supplier profile updated successfully.");
+  } catch (error) {
+    console.error(error);
+    alert("Unable to update profile. Please try again.");
+  }
+}
 
 async function loadListings() {
   myListings.textContent = "Loading listings...";
