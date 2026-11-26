@@ -202,7 +202,17 @@ async function loadListings() {
         " | Status: " + item.status;
 
       card.append(title, details);
-      myListings.appendChild(card);
+
+const editButton = document.createElement("button");
+editButton.textContent = "Edit Listing";
+editButton.type = "button";
+
+const unavailableButton = document.createElement("button");
+unavailableButton.textContent = "Mark as Unavailable";
+unavailableButton.type = "button";
+
+card.append(editButton, unavailableButton);
+myListings.appendChild(card);
     });
 
   } catch (error) {
