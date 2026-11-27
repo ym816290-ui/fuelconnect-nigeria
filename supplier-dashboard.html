@@ -464,6 +464,88 @@ async function loadIncomingRequests() {
   }
 }
   
+async function loadSupplierNotifications() {
+  const notificationsBox = document.getElementById("supplierNotifications");
+
+  notificationsBox.textContent = "Loading notifications...";
+
+  try {
+    const notificationsQuery = query(
+      collection(db, "notifications"),
+      where("userId", "==", currentUser.uid)
+    );
+
+    const snapshot = await getDocs(notificationsQuery);
+    notificationsBox.replaceChildren();
+
+    if (snapshot.empty) {
+      notificationsBox.textContent = "You have no notifications yet.";
+      return;
+    }
+
+    const notifications = [];
+
+    snapshot.forEach((notificationDoc) => {
+      notifications.push({
+        id: notificationDoc.id,
+        ...notificationDoc.data()
+      });
+    });
+
+    notifications.sort((a, b) => {
+      const dateA = a.createdAt?.toMillis?.() || 0;
+      const dateB = b.createdAt?.toMillis?.() || 0;
+      return dateB - dateA;
+    });
+
+    notifications.forEach((item) => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = item.title || "FuelConnect Notification";
+
+      const message = document.createElement("p");
+      message.textContent = item.message || "";
+
+      const status = document.createElement("p");
+      status.textContent = item.read ? "Read" : "Unread";
+
+      card.append(title, message, status);
+
+      if (!item.read) {
+        const markReadButton = document.createElement("button");
+        markReadButton.type = "button";
+        markReadButton.textContent = "Mark as Read";
+
+        markReadButton.addEventListener("click", async () => {
+          try {
+            await updateDoc(
+              doc(db, "notifications", item.id),
+              { read: true }
+            );
+
+            status.textContent = "Read";
+            markReadButton.remove();
+          } catch (error) {
+            console.error("Mark notification as read error:", error);
+            status.textContent = "Unable to mark as read.";
+          }
+        });
+
+        card.appendChild(markReadButton);
+      }
+
+      notificationsBox.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Supplier notifications error:", error);
+    notificationsBox.textContent = "Unable to load your notifications.";
+  }
+}
+
+  
 async function loadBuyerQuotationResponses() {
   const responsesBox = document.getElementById("quotationResponses");
   responsesBox.textContent = "Loading buyer responses...";
