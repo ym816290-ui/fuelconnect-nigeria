@@ -645,15 +645,18 @@ onAuthStateChanged(auth, async (user) => {
 
     await loadListings();
 
+
+await loadSupplierNotifications();
+
 if (canPublish) {
   document.getElementById("incomingRequestsSection").hidden = false;
   await loadIncomingRequests();
-  await loadSupplierNotifications();
 
   document.getElementById("quotationResponsesSection").hidden = false;
   await loadBuyerQuotationResponses();
 
 } else {
+
   document.getElementById("incomingRequestsSection").hidden = true;
   document.getElementById("quotationResponsesSection").hidden = true;
 }
