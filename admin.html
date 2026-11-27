@@ -103,6 +103,52 @@ button:disabled{opacity:.5;cursor:not-allowed}
     Refresh Activity Logs
   </button>
 </section>
+ 
+<section class="card" id="adminNotificationsSection">
+  <h2>Send Notifications</h2>
+  <p class="muted">
+    Send important updates to FuelConnect buyers and suppliers.
+  </p>
+
+  <form id="adminNotificationForm">
+    <label for="notificationUserId">Recipient User ID</label>
+    <input
+      type="text"
+      id="notificationUserId"
+      placeholder="Enter recipient User ID"
+      required
+    >
+
+    <label for="notificationTitle">Notification Title</label>
+    <input
+      type="text"
+      id="notificationTitle"
+      maxlength="120"
+      placeholder="Enter notification title"
+      required
+    >
+
+    <label for="notificationMessage">Message</label>
+    <textarea
+      id="notificationMessage"
+      maxlength="1000"
+      placeholder="Write your notification"
+      required
+    ></textarea>
+
+    <label for="notificationType">Notification Type</label>
+    <select id="notificationType" required>
+      <option value="general">General</option>
+      <option value="account">Account Update</option>
+      <option value="supplier">Supplier Update</option>
+      <option value="marketplace">Marketplace Update</option>
+    </select>
+
+    <button type="submit">Send Notification</button>
+    <p id="notificationFormMessage" role="status"></p>
+  </form>
+</section>
+
 </main>
 
 <script type="module">
@@ -113,8 +159,9 @@ import {
  getFirestore,
  collection,
  getDocs,
- doc,
  getDoc,
+ doc,
+ addDoc,
  updateDoc,
  writeBatch,
  serverTimestamp
@@ -609,6 +656,58 @@ document.getElementById("logoutButton").addEventListener("click",async()=>{
  await signOut(auth);
  window.location.replace("login.html");
 });
+ 
+document.getElementById("adminNotificationForm")
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const messageBox = document.getElementById("notificationFormMessage");
+    const recipientId = document.getElementById("notificationUserId").value.trim();
+    const title = document.getElementById("notificationTitle").value.trim();
+    const message = document.getElementById("notificationMessage").value.trim();
+    const type = document.getElementById("notificationType").value;
+
+    if (!currentAdmin) {
+      messageBox.textContent = "Administrator access is required.";
+      return;
+    }
+
+    if (!recipientId || !title || !message) {
+      messageBox.textContent = "Please complete all fields.";
+      return;
+    }
+
+    messageBox.textContent = "Sending notification...";
+
+    try {
+      const recipientDoc = await getDoc(doc(db, "users", recipientId));
+
+      if (!recipientDoc.exists() ||
+          !["buyer", "supplier"].includes(recipientDoc.data().role)) {
+        messageBox.textContent =
+          "Recipient not found or is not a Buyer or Supplier.";
+        return;
+      }
+
+      await addDoc(collection(db, "notifications"), {
+        userId: recipientId,
+        title: title,
+        message: message,
+        type: type,
+        read: false,
+        createdAt: serverTimestamp()
+      });
+
+      messageBox.textContent = "Notification sent successfully!";
+      document.getElementById("adminNotificationForm").reset();
+
+    } catch (error) {
+      console.error("Notification sending error:", error);
+      messageBox.textContent =
+        "Unable to send notification. Please try again.";
+    }
+  });
+
 </script>
 </body>
 </html>
