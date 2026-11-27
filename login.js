@@ -38,6 +38,7 @@ const appCheck = initializeAppCheck(app, {
 });
 
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");
