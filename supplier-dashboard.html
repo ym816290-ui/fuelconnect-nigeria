@@ -648,6 +648,7 @@ onAuthStateChanged(auth, async (user) => {
 if (canPublish) {
   document.getElementById("incomingRequestsSection").hidden = false;
   await loadIncomingRequests();
+  await loadSupplierNotifications();
 
   document.getElementById("quotationResponsesSection").hidden = false;
   await loadBuyerQuotationResponses();
