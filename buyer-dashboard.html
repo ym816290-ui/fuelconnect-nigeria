@@ -125,17 +125,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-  const app = initializeApp(firebaseConfig);
 
 const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaEnterpriseProvider(
-    6Lc01zQuAAAAAF311EEQsaUrN2V4LQcZDDICzRJj
+    "6Lc01zQuAAAAAF311EEQsaUrN2V4LQcZDDICzRJj"
   ),
   isTokenAutoRefreshEnabled: true
 });
 
-const auth = getAuth(app);
-const db = getFirestore(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
