@@ -153,6 +153,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+ import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app-check.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
 import {
@@ -180,6 +184,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider(
+    "6Lc01zQuAAAAAF311EEQsaUrN2V4LQcZDDICzRJj"
+  ),
+  isTokenAutoRefreshEnabled: true
+});
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 
